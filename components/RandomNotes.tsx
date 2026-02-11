@@ -10,7 +10,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
-import { Input } from "./ui/input";
+import FretBoard from "./FretBoard";
+import { HighlightedFret } from "./FretBoardString";
 
 export default function RandomNotes() {
   const [numNotes, setNumNotes] = useState(4);
@@ -21,21 +22,69 @@ export default function RandomNotes() {
     setCurrentNotes(generateNotes(numNotes));
   }, []);
 
+  const [selectedNoteIndex, setSelectedNoteIndex] = useState<number | null>(
+    null,
+  );
+  const [tempNoteIndex, setTempNoteIndex] = useState<number | null>(null);
+
+  const [preferFlats, setPreferFlats] = useState<boolean>(true);
+
   const [viewMode, setViewMode] = useState<number>(0);
   const hideStave = viewModes[viewMode] === "names";
   const hideNames = viewModes[viewMode] === "stave";
 
   const handleGenerateNewNotes = () => {
     setCurrentNotes(generateNotes(numNotes));
+    setSelectedNoteIndex(null);
   };
   const pitches = currentNotes.map((pitch) =>
-    valueToNote(pitch, { prefer: "flats", forceNaturals: true }),
+    valueToNote(pitch, {
+      prefer: preferFlats ? "flats" : "sharps",
+      forceNaturals: true,
+    }),
   );
-  const pitchLabels = pitches.map(pitchToLabel);
+  const noteHasAccidental: Partial<Record<NoteLetter, boolean>> = {};
+  const pitchLabels = pitches.map((pitch) => {
+    if (pitch.accidental !== "") {
+      noteHasAccidental[pitch.letter] = true;
+    }
+    if (noteHasAccidental[pitch.letter] && pitch.accidental === "") {
+      noteHasAccidental[pitch.letter] = false;
+      return pitchToLabel(pitch, true);
+    }
+    return pitchToLabel(pitch);
+  });
   pitchLabels[0] = pitchLabels[0] + "/q";
   const staffPitches = pitchLabels.join(", ");
 
-  const pitchClassLabels = pitches.map(pitchClassToLabel).join(" - ");
+  const pitchClassLabels = pitches.map(pitchClassToLabel);
+
+  const highlights: HighlightedFret[] = [];
+
+  const selectedColor = "#77AACC";
+  const tempColor = "#AA77CC";
+
+  if (
+    tempNoteIndex !== null &&
+    typeof currentNotes[tempNoteIndex] !== "undefined"
+  ) {
+    highlights.push(
+      highlightFromValue(currentNotes[tempNoteIndex], tempColor, preferFlats),
+    );
+  }
+
+  if (
+    selectedNoteIndex !== null &&
+    typeof currentNotes[selectedNoteIndex] !== "undefined"
+  ) {
+    highlights.push(
+      highlightFromValue(
+        currentNotes[selectedNoteIndex],
+        selectedColor,
+        preferFlats,
+      ),
+    );
+  }
 
   return (
     <div className="flex flex-col items-center w-full h-full justify-between">
@@ -46,10 +95,42 @@ export default function RandomNotes() {
       </div>
 
       <div
-        className={`text-5xl font-bold mb-8 mt-[-5rem] shrink-0 transition-opacity ${hideNames ? "opacity-0" : ""}`}
+        className={`text-5xl font-bold mt-[-5rem] flex align-center gap-8 shrink-0 transition-opacity ${hideNames ? "opacity-0" : ""}`}
       >
-        {pitchClassLabels}
+        {pitchClassLabels.map((pitchClassLabel, index) => {
+          const isSelected = selectedNoteIndex === index;
+          const isTemp = tempNoteIndex === index;
+          const color = isTemp
+            ? tempColor
+            : isSelected
+              ? selectedColor
+              : undefined;
+          return (
+            <div
+              key={index}
+              className={`rounded-full w-12 text-center `}
+              style={{
+                background: color,
+              }}
+              onMouseEnter={() => {
+                setTempNoteIndex(index);
+              }}
+              onMouseLeave={() => {
+                setTempNoteIndex(null);
+              }}
+              onClick={() => {
+                setSelectedNoteIndex(
+                  selectedNoteIndex !== index ? index : null,
+                );
+              }}
+            >
+              {pitchClassLabel}
+            </div>
+          );
+        })}
       </div>
+
+      <FretBoard highlighted={highlights} />
 
       <Button className="w-full" onClick={handleGenerateNewNotes}>
         generate!
@@ -62,15 +143,16 @@ export default function RandomNotes() {
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="flex justify-between gap-4 w-full m-4">
+          <div className="flex justify-between gap-4 w-full p-4">
             <Button
               className=""
               onClick={() => setViewMode((viewMode + 1) % viewModes.length)}
             >
               view: {viewModes[viewMode]}
             </Button>
-            <Input type="number" />
-            <Input type="range" />
+            <Button className="" onClick={() => setPreferFlats(!preferFlats)}>
+              prefer: {preferFlats ? "b" : "#"}
+            </Button>
           </div>
         </CollapsibleContent>
       </Collapsible>
@@ -79,6 +161,22 @@ export default function RandomNotes() {
 }
 
 const viewModes = ["both", "names", "stave"];
+
+function highlightFromValue(
+  value: number,
+  color: string,
+  preferFlats: boolean,
+) {
+  const pitch = valueToNote(value, {
+    prefer: preferFlats ? "flats" : "sharps",
+    forceNaturals: true,
+  });
+  return {
+    pitchClass: value % 12,
+    label: pitchClassToLabel(pitch),
+    color: color,
+  };
+}
 
 function generateNotes(numNotes: number) {
   const series = Array(numNotes)
@@ -101,7 +199,10 @@ interface ValueToNoteOptions {
   prefer?: "sharps" | "flats";
   forceNaturals?: boolean;
 }
-function valueToNote(value: number, options?: ValueToNoteOptions): Pitch {
+export function valueToNote(
+  value: number,
+  options?: ValueToNoteOptions,
+): Pitch {
   const note: Pitch = {
     letter: "A",
     accidental: "",
@@ -129,22 +230,25 @@ const pickPitchClass = (
   candidates: PitchClass[],
   options?: ValueToNoteOptions,
 ) => {
+  const forceNaturals = options?.forceNaturals ?? true;
+  const preferredAccidental = options?.prefer ?? "flats";
+
   const naturalPick = candidates.find((pc) => pc.accidental === "");
-  if (naturalPick && options?.forceNaturals) {
+  if (naturalPick && forceNaturals) {
     return naturalPick;
   }
 
   const flatPick = candidates.find(
     (pc) => pc.accidental === "b" || pc.accidental === "bb",
   );
-  if (flatPick && options?.prefer === "flats") {
+  if (flatPick && preferredAccidental === "flats") {
     return flatPick;
   }
 
   const sharpPick = candidates.find(
     (pc) => pc.accidental === "#" || pc.accidental === "##",
   );
-  if (sharpPick && options?.prefer === "sharps") {
+  if (sharpPick && preferredAccidental === "sharps") {
     return sharpPick;
   }
 

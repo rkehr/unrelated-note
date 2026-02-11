@@ -38,8 +38,7 @@ export default function MusicStaff({
       ctx.scale(2, 2);
       const score = factory.EasyScore();
       const staveNotes = score.notes(notes);
-      console.log(staveNotes);
-      const system = factory.System();
+      const system = factory.System({ width: 220 });
 
       system
         .addStave({

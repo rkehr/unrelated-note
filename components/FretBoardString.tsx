@@ -34,7 +34,9 @@ export default function FretBoardString(props: FretBoardStringProps) {
                   style={{ background: highlight.color }}
                   className={`w-5 h-5 rounded-full relative flex items-center justify-center`}
                 >
-                  <div className=" text-xs text-center">{highlight.label}</div>
+                  <div className=" text-xs font-bold text-center">
+                    {highlight.label}
+                  </div>
                 </div>
               </div>
             )}
@@ -45,7 +47,7 @@ export default function FretBoardString(props: FretBoardStringProps) {
   );
 }
 
-interface HighlightedFret {
+export interface HighlightedFret {
   label: string;
   color: string;
   pitchClass: number;
