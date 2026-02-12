@@ -11,3 +11,11 @@ export default function PitchLabel(props: PitchLabelProps) {
 
 export const pitchToLabel = (pitch: Pitch, explicitNatural?: boolean) =>
   `${pitch.letter}${pitch.accidental || (explicitNatural ? "n" : "")}${pitch.octave}`;
+
+export const accidentalUnicode = {
+  bb: "♭♭",
+  b: "♭",
+  "": "",
+  "#": "♯",
+  "##": "♯♯",
+};

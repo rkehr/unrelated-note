@@ -1,4 +1,3 @@
-import FretBoardViewer from "@/components/FretBoardViewer";
 import RandomNotes from "@/components/RandomNotes";
 import Link from "next/link";
 

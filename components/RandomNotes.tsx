@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { pitchToLabel } from "./PitchLabel";
-import MusicStaff from "./MusicStaff";
 import { Button } from "./ui/button";
 import { pitchClassToLabel } from "./PitchClassLabel";
 import {
@@ -12,10 +11,14 @@ import {
 } from "./ui/collapsible";
 import FretBoard from "./FretBoard";
 import { HighlightedFret } from "./FretBoardString";
+import PitchDetector from "./PitchDetector";
+import MidiNoteStave from "./MidiNoteStave";
+import { CheckCircle } from "lucide-react";
 
 export default function RandomNotes() {
   const [numNotes, setNumNotes] = useState(4);
   const [currentNotes, setCurrentNotes] = useState<number[]>([69, 69, 69, 69]);
+  const [correctlyPlayedIndex, setCorrectlyPlayedIndex] = useState<number>(-1);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -29,6 +32,7 @@ export default function RandomNotes() {
 
   const [preferFlats, setPreferFlats] = useState<boolean>(true);
 
+  const [isStrict, setIsStrict] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<number>(0);
   const hideStave = viewModes[viewMode] === "names";
   const hideNames = viewModes[viewMode] === "stave";
@@ -43,19 +47,6 @@ export default function RandomNotes() {
       forceNaturals: true,
     }),
   );
-  const noteHasAccidental: Partial<Record<NoteLetter, boolean>> = {};
-  const pitchLabels = pitches.map((pitch) => {
-    if (pitch.accidental !== "") {
-      noteHasAccidental[pitch.letter] = true;
-    }
-    if (noteHasAccidental[pitch.letter] && pitch.accidental === "") {
-      noteHasAccidental[pitch.letter] = false;
-      return pitchToLabel(pitch, true);
-    }
-    return pitchToLabel(pitch);
-  });
-  pitchLabels[0] = pitchLabels[0] + "/q";
-  const staffPitches = pitchLabels.join(", ");
 
   const pitchClassLabels = pitches.map(pitchClassToLabel);
 
@@ -91,12 +82,52 @@ export default function RandomNotes() {
       <div
         className={`bg-white transition-opacity ${hideStave ? "opacity-0" : ""}`}
       >
-        <MusicStaff notes={staffPitches} width={450} height={300} />
+        <MidiNoteStave notes={currentNotes} preferFlats={preferFlats} />
       </div>
 
       <div
         className={`text-5xl font-bold mt-[-5rem] flex align-center gap-8 shrink-0 transition-opacity ${hideNames ? "opacity-0" : ""}`}
       >
+        <PitchDetector
+          onConfidentPitchChange={(value) => {
+            console.log("====================");
+            console.log(formatMidiNote(value, preferFlats));
+            if (value === null) {
+              return;
+            }
+            console.log(correctlyPlayedIndex);
+            const targetNote = currentNotes[correctlyPlayedIndex + 1];
+            if (value % 12 === targetNote % 12) {
+              console.log("correct!");
+              if (correctlyPlayedIndex + 1 === currentNotes.length - 1) {
+                handleGenerateNewNotes();
+                setCorrectlyPlayedIndex(-1);
+                console.log("you did it, generating new notes....");
+                return;
+              }
+              console.log(correctlyPlayedIndex + 1);
+              setCorrectlyPlayedIndex(correctlyPlayedIndex + 1);
+            } else {
+              if (isStrict) {
+                setCorrectlyPlayedIndex(-1);
+              }
+              console.log("resetting...");
+              console.log({
+                value,
+                targetNote,
+                valueClass: value % 12,
+                targetClass: targetNote % 12,
+              });
+              console.log(formatMidiNote(targetNote, preferFlats));
+              console.log(currentNotes, correctlyPlayedIndex + 1);
+            }
+          }}
+          onImmediatePitchChange={() => {}}
+          formatMidiNote={(value) => {
+            return formatMidiNote(value, preferFlats);
+          }}
+        />
+
         {pitchClassLabels.map((pitchClassLabel, index) => {
           const isSelected = selectedNoteIndex === index;
           const isTemp = tempNoteIndex === index;
@@ -108,7 +139,7 @@ export default function RandomNotes() {
           return (
             <div
               key={index}
-              className={`rounded-full w-12 text-center `}
+              className={`rounded-full w-12 text-center relative`}
               style={{
                 background: color,
               }}
@@ -125,6 +156,11 @@ export default function RandomNotes() {
               }}
             >
               {pitchClassLabel}
+              <div
+                className={`text-green-500 absolute text-4xl inset-0 flex justify-center items-center transition-opacity ${index <= correctlyPlayedIndex ? "opacity-100" : "opacity-0"}`}
+              >
+                <CheckCircle size={36} />
+              </div>
             </div>
           );
         })}
@@ -132,23 +168,26 @@ export default function RandomNotes() {
 
       <FretBoard highlighted={highlights} />
 
-      <Button className="w-full" onClick={handleGenerateNewNotes}>
+      <Button className="w-full max-w-lg" onClick={handleGenerateNewNotes}>
         generate!
       </Button>
 
-      <Collapsible className="w-full">
+      <Collapsible className="w-full max-w-lg mt-4 mx-4">
         <CollapsibleTrigger asChild>
           <Button variant="outline" className="w-full">
             options
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="flex justify-between gap-4 w-full p-4">
+          <div className="flex justify-between gap-4 w-full p-8">
             <Button
               className=""
               onClick={() => setViewMode((viewMode + 1) % viewModes.length)}
             >
               view: {viewModes[viewMode]}
+            </Button>
+            <Button className="" onClick={() => setIsStrict(!isStrict)}>
+              pitch detection: {isStrict ? "strict" : "lenient"}
             </Button>
             <Button className="" onClick={() => setPreferFlats(!preferFlats)}>
               prefer: {preferFlats ? "b" : "#"}
@@ -177,6 +216,17 @@ function highlightFromValue(
     color: color,
   };
 }
+
+const formatMidiNote = (value: number | null, preferFlats: boolean) => {
+  if (value === null) {
+    return null;
+  }
+  const pitch = valueToNote(value, {
+    prefer: preferFlats ? "flats" : "sharps",
+    forceNaturals: true,
+  });
+  return pitchToLabel(pitch);
+};
 
 function generateNotes(numNotes: number) {
   const series = Array(numNotes)
@@ -266,7 +316,7 @@ export interface Pitch {
   value: number;
 }
 
-type NoteLetter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "B";
+export type NoteLetter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "B";
 type Accidental = "#" | "##" | "b" | "bb" | "";
 
 const offsetByAccidental: Record<Accidental, number> = {

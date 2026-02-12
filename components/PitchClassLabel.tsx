@@ -1,3 +1,4 @@
+import { accidentalUnicode } from "./PitchLabel";
 import { PitchClass } from "./RandomNotes";
 
 interface PitchClassLabelProps {
@@ -9,4 +10,4 @@ export default function PitchClassLabel(props: PitchClassLabelProps) {
 }
 
 export const pitchClassToLabel = (pitchClass: PitchClass) =>
-  `${pitchClass.letter}${pitchClass.accidental}`;
+  `${pitchClass.letter}${accidentalUnicode[pitchClass.accidental]}`;
