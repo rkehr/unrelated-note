@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { pitchToLabel } from "./PitchLabel";
+import { accidentalUnicode, pitchToLabel } from "./PitchLabel";
 import { Button } from "./ui/button";
 import { pitchClassToLabel } from "./PitchClassLabel";
 import {
@@ -14,16 +14,16 @@ import { HighlightedFret } from "./FretBoardString";
 import PitchDetector from "./PitchDetector";
 import MidiNoteStave from "./MidiNoteStave";
 import { CheckCircle } from "lucide-react";
+import PitchStringView from "./PitchStringView";
 
 export default function RandomNotes() {
-  const [numNotes, setNumNotes] = useState(4);
+  const [numNotes, setNumNotes] = useState(8);
   const [currentNotes, setCurrentNotes] = useState<number[]>([69, 69, 69, 69]);
   const [correctlyPlayedIndex, setCorrectlyPlayedIndex] = useState<number>(-1);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentNotes(generateNotes(numNotes));
-  }, []);
+  }, [numNotes]);
 
   const [selectedNoteIndex, setSelectedNoteIndex] = useState<number | null>(
     null,
@@ -32,7 +32,7 @@ export default function RandomNotes() {
 
   const [preferFlats, setPreferFlats] = useState<boolean>(true);
 
-  const [isStrict, setIsStrict] = useState<boolean>(true);
+  const [isStrict, setIsStrict] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<number>(0);
   const hideStave = viewModes[viewMode] === "names";
   const hideNames = viewModes[viewMode] === "stave";
@@ -77,6 +77,26 @@ export default function RandomNotes() {
     );
   }
 
+  const handlePitchChange = (value: number | null) => {
+    if (value === null) {
+      return;
+    }
+    const targetNote = currentNotes[correctlyPlayedIndex + 1];
+    if (value % 12 === targetNote % 12) {
+      if (correctlyPlayedIndex + 1 === currentNotes.length - 1) {
+        handleGenerateNewNotes();
+        setCorrectlyPlayedIndex(-1);
+        return;
+      }
+      setCorrectlyPlayedIndex(correctlyPlayedIndex + 1);
+      setSelectedNoteIndex(correctlyPlayedIndex + 2);
+    } else {
+      if (isStrict) {
+        setCorrectlyPlayedIndex(-1);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col items-center w-full h-full justify-between">
       <div
@@ -86,84 +106,28 @@ export default function RandomNotes() {
       </div>
 
       <div
-        className={`text-5xl font-bold mt-[-5rem] flex align-center gap-8 shrink-0 transition-opacity ${hideNames ? "opacity-0" : ""}`}
+        className={`text-5xl font-bold flex justify-evenly align-baseline gap-16 shrink-0 `}
       >
         <PitchDetector
-          onConfidentPitchChange={(value) => {
-            console.log("====================");
-            console.log(formatMidiNote(value, preferFlats));
-            if (value === null) {
-              return;
-            }
-            console.log(correctlyPlayedIndex);
-            const targetNote = currentNotes[correctlyPlayedIndex + 1];
-            if (value % 12 === targetNote % 12) {
-              console.log("correct!");
-              if (correctlyPlayedIndex + 1 === currentNotes.length - 1) {
-                handleGenerateNewNotes();
-                setCorrectlyPlayedIndex(-1);
-                console.log("you did it, generating new notes....");
-                return;
-              }
-              console.log(correctlyPlayedIndex + 1);
-              setCorrectlyPlayedIndex(correctlyPlayedIndex + 1);
-            } else {
-              if (isStrict) {
-                setCorrectlyPlayedIndex(-1);
-              }
-              console.log("resetting...");
-              console.log({
-                value,
-                targetNote,
-                valueClass: value % 12,
-                targetClass: targetNote % 12,
-              });
-              console.log(formatMidiNote(targetNote, preferFlats));
-              console.log(currentNotes, correctlyPlayedIndex + 1);
-            }
-          }}
+          onConfidentPitchChange={handlePitchChange}
           onImmediatePitchChange={() => {}}
           formatMidiNote={(value) => {
             return formatMidiNote(value, preferFlats);
           }}
         />
 
-        {pitchClassLabels.map((pitchClassLabel, index) => {
-          const isSelected = selectedNoteIndex === index;
-          const isTemp = tempNoteIndex === index;
-          const color = isTemp
-            ? tempColor
-            : isSelected
-              ? selectedColor
-              : undefined;
-          return (
-            <div
-              key={index}
-              className={`rounded-full w-12 text-center relative`}
-              style={{
-                background: color,
-              }}
-              onMouseEnter={() => {
-                setTempNoteIndex(index);
-              }}
-              onMouseLeave={() => {
-                setTempNoteIndex(null);
-              }}
-              onClick={() => {
-                setSelectedNoteIndex(
-                  selectedNoteIndex !== index ? index : null,
-                );
-              }}
-            >
-              {pitchClassLabel}
-              <div
-                className={`text-green-500 absolute text-4xl inset-0 flex justify-center items-center transition-opacity ${index <= correctlyPlayedIndex ? "opacity-100" : "opacity-0"}`}
-              >
-                <CheckCircle size={36} />
-              </div>
-            </div>
-          );
-        })}
+        <PitchStringView
+          notes={currentNotes}
+          preferFlats={preferFlats}
+          hide={hideNames}
+          selectedNoteIndex={selectedNoteIndex}
+          tempNoteIndex={tempNoteIndex}
+          selectedColor={selectedColor}
+          tempColor={tempColor}
+          correctlyPlayedIndex={correctlyPlayedIndex}
+          setSelectedNoteIndex={setSelectedNoteIndex}
+          setTempNoteIndex={setSelectedNoteIndex}
+        />
       </div>
 
       <FretBoard highlighted={highlights} />
@@ -190,7 +154,7 @@ export default function RandomNotes() {
               pitch detection: {isStrict ? "strict" : "lenient"}
             </Button>
             <Button className="" onClick={() => setPreferFlats(!preferFlats)}>
-              prefer: {preferFlats ? "b" : "#"}
+              prefer: {accidentalUnicode[preferFlats ? "b" : "#"]}
             </Button>
           </div>
         </CollapsibleContent>
@@ -199,7 +163,7 @@ export default function RandomNotes() {
   );
 }
 
-const viewModes = ["both", "names", "stave"];
+const viewModes = ["both", "stave"];
 
 function highlightFromValue(
   value: number,

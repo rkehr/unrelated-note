@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const edwin = localFont({
+  src: [
+    { path: "fonts/Edwin-Roman.otf", weight: "400", style: "normal" },
+    { path: "fonts/Edwin-Italic.otf", weight: "400", style: "italic" },
+    { path: "fonts/Edwin-Bold.otf", weight: "700", style: "normal" },
+    { path: "fonts/Edwin-BdIta.otf", weight: "700", style: "italic" },
+  ],
+  variable: "--font-edwin",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -25,10 +26,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={` ${edwin.variable} antialiased `}>
+        <div className="flex flex-col w-screen min-h-screen">
+          <div className="w-full flex flex-col">
+            <div className="text-xl font-bold text-center">on an</div>
+            <h1 className="text-5xl font-bold text-center">unrelated note</h1>
+            <div className="text-xl font-bold text-center">
+              (a fretboard trainer)
+            </div>
+          </div>
+          {children}
+        </div>
       </body>
     </html>
   );

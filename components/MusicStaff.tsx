@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Factory } from "vexflow";
+import { Barline, Factory, Registry, System } from "vexflow";
 
 interface MusicStaffProps {
   notes: string;
@@ -12,8 +12,8 @@ interface MusicStaffProps {
 
 export default function MusicStaff({
   notes,
-  width = 500,
-  height = 200,
+  width = 600,
+  height = 100,
   clef = "treble",
   timeSignature = "4/4",
 }: MusicStaffProps) {
@@ -25,32 +25,69 @@ export default function MusicStaff({
 
     containerRef.current.innerHTML = "";
 
-    try {
-      const factory = new Factory({
-        renderer: {
-          elementId: containerId,
-          width,
-          height,
-        },
-      });
+    const measuresPerRow = 2;
+    const measures = notes.split(", |, ");
+    const numRows = Math.ceil(measures.length / measuresPerRow);
 
-      const ctx = factory.getContext();
-      ctx.scale(2, 2);
-      const score = factory.EasyScore();
-      const staveNotes = score.notes(notes);
-      const system = factory.System({ width: 220 });
+    const f = new Factory({
+      renderer: {
+        elementId: containerId,
+        width,
+        height: numRows * 100,
+      },
+    });
+    const score = f.EasyScore();
 
-      system
-        .addStave({
-          voices: [score.voice(staveNotes)],
-        })
-        .addClef(clef)
-        .addTimeSignature(timeSignature);
+    const margin = 20;
+    const usableWidth = width - 2 * 20;
+    const clefReserve = 0;
 
-      factory.draw();
-    } catch (error) {
-      console.error("Error rendering VexFlow notation:", error);
+    let x = margin;
+    let y = -10;
+
+    function appendSystem(width: number) {
+      const system = f.System({ x, y, width });
+      x += width;
+      return system;
     }
+    function newLine() {
+      x = margin;
+      y += 100;
+    }
+
+    score.set({ time: timeSignature });
+
+    measures.forEach((notes, index) => {
+      const isFirstMeasure = index === 0;
+      const isLastMeasure = index === measures.length - 1;
+      const isFirstRow = index < measuresPerRow;
+
+      let measureWidth = usableWidth / measuresPerRow;
+      if (isFirstRow) {
+        measureWidth = (usableWidth - clefReserve) / measuresPerRow;
+      }
+      if (isFirstMeasure) {
+        measureWidth += clefReserve;
+      }
+
+      if (index % measuresPerRow === 0 && !isFirstMeasure) {
+        console.log("new line");
+        newLine();
+      }
+      const system = appendSystem(measureWidth);
+
+      const stave = system.addStave({
+        voices: [score.voice(score.notes(notes))],
+      });
+      if (isFirstMeasure) {
+        stave.addClef(clef).addTimeSignature(timeSignature);
+      }
+      if (isLastMeasure) {
+        stave.addEndModifier(new Barline("end"));
+      }
+    });
+
+    f.draw();
   }, [notes, width, height, clef, timeSignature, containerId]);
 
   return <div ref={containerRef} id={containerId} />;

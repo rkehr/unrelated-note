@@ -15,17 +15,34 @@ export default function MidiNoteStave(props: MidiNoteStaveProps) {
     }),
   );
   const noteHasAccidental: Partial<Record<NoteLetter, boolean>> = {};
-  const pitchLabels = pitches.map((pitch) => {
-    if (pitch.accidental !== "") {
-      noteHasAccidental[pitch.letter] = true;
+  const pitchLabels = pitches
+    .map((pitch) => {
+      if (pitch.accidental !== "") {
+        noteHasAccidental[pitch.letter] = true;
+      }
+      if (noteHasAccidental[pitch.letter] && pitch.accidental === "") {
+        noteHasAccidental[pitch.letter] = false;
+        return pitchToLabel(pitch, true);
+      }
+      return pitchToLabel(pitch);
+    })
+    .map((label) => label + "/q");
+
+  const barredPitches = addBarLines(pitchLabels);
+
+  const staffPitches = barredPitches.join(", ");
+  return <MusicStaff notes={staffPitches} />;
+}
+
+function addBarLines(notes: string[], notesPerBar: number = 4) {
+  const result: string[] = [];
+
+  for (let i = 0; i < notes.length; i++) {
+    result.push(notes[i]);
+    if ((i + 1) % notesPerBar === 0 && i !== notes.length - 1) {
+      result.push("|");
     }
-    if (noteHasAccidental[pitch.letter] && pitch.accidental === "") {
-      noteHasAccidental[pitch.letter] = false;
-      return pitchToLabel(pitch, true);
-    }
-    return pitchToLabel(pitch);
-  });
-  pitchLabels[0] = pitchLabels[0] + "/q";
-  const staffPitches = pitchLabels.join(", ");
-  return <MusicStaff notes={staffPitches} width={450} height={300} />;
+  }
+
+  return result;
 }

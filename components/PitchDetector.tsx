@@ -169,7 +169,7 @@ function PitchDetector(props: PitchDetectorProps) {
           )}
         </div>
         <div
-          className="bg-green-500  absolute h-full left-0 right-0 bottom-0 transition-all duration-75 ease-out opacity-50 z-1"
+          className="bg-green-600 absolute h-full left-0 right-0 bottom-0 transition-all duration-300 ease-out opacity-50 z-1"
           style={{ height: `${level * 100}%` }}
         />
       </button>
