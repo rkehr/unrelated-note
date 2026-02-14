@@ -1,26 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { accidentalUnicode, pitchToLabel } from "./PitchLabel";
+import { pitchToLabel } from "./PitchLabel";
 import { Button } from "./ui/button";
 import { pitchClassToLabel } from "./PitchClassLabel";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "./ui/collapsible";
 import FretBoard from "./FretBoard";
+import RandomNotesOptions from "@/app/RandomNotesOptions";
 import { HighlightedFret } from "./FretBoardString";
 import PitchDetector from "./PitchDetector";
 import MidiNoteStave from "./MidiNoteStave";
-import { CheckCircle } from "lucide-react";
 import PitchStringView from "./PitchStringView";
+import { useWakeLock } from "react-screen-wake-lock";
 
 export default function RandomNotes() {
   const [numNotes, setNumNotes] = useState(8);
   const [currentNotes, setCurrentNotes] = useState<number[]>([69, 69, 69, 69]);
   const [correctlyPlayedIndex, setCorrectlyPlayedIndex] = useState<number>(-1);
 
+  useWakeLock({ reacquireOnPageVisible: true });
   useEffect(() => {
     setCurrentNotes(generateNotes(numNotes));
   }, [numNotes]);
@@ -30,25 +27,18 @@ export default function RandomNotes() {
   );
   const [tempNoteIndex, setTempNoteIndex] = useState<number | null>(null);
 
-  const [preferFlats, setPreferFlats] = useState<boolean>(true);
+  const [options, setOptions] = useState({
+    viewMode: 0,
+    preferFlats: true,
+    isStrict: false,
+  });
 
-  const [isStrict, setIsStrict] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<number>(0);
-  const hideStave = viewModes[viewMode] === "names";
-  const hideNames = viewModes[viewMode] === "stave";
+  const hideNames = viewModes[options.viewMode] === "stave";
 
   const handleGenerateNewNotes = () => {
     setCurrentNotes(generateNotes(numNotes));
     setSelectedNoteIndex(null);
   };
-  const pitches = currentNotes.map((pitch) =>
-    valueToNote(pitch, {
-      prefer: preferFlats ? "flats" : "sharps",
-      forceNaturals: true,
-    }),
-  );
-
-  const pitchClassLabels = pitches.map(pitchClassToLabel);
 
   const highlights: HighlightedFret[] = [];
 
@@ -60,7 +50,11 @@ export default function RandomNotes() {
     typeof currentNotes[tempNoteIndex] !== "undefined"
   ) {
     highlights.push(
-      highlightFromValue(currentNotes[tempNoteIndex], tempColor, preferFlats),
+      highlightFromValue(
+        currentNotes[tempNoteIndex],
+        tempColor,
+        options.preferFlats,
+      ),
     );
   }
 
@@ -72,7 +66,7 @@ export default function RandomNotes() {
       highlightFromValue(
         currentNotes[selectedNoteIndex],
         selectedColor,
-        preferFlats,
+        options.preferFlats,
       ),
     );
   }
@@ -91,7 +85,7 @@ export default function RandomNotes() {
       setCorrectlyPlayedIndex(correctlyPlayedIndex + 1);
       setSelectedNoteIndex(correctlyPlayedIndex + 2);
     } else {
-      if (isStrict) {
+      if (options.isStrict) {
         setCorrectlyPlayedIndex(-1);
       }
     }
@@ -99,10 +93,8 @@ export default function RandomNotes() {
 
   return (
     <div className="flex flex-col items-center w-full h-full justify-between">
-      <div
-        className={`bg-white transition-opacity ${hideStave ? "opacity-0" : ""}`}
-      >
-        <MidiNoteStave notes={currentNotes} preferFlats={preferFlats} />
+      <div className={`bg-white transition-opacity }`}>
+        <MidiNoteStave notes={currentNotes} preferFlats={options.preferFlats} />
       </div>
 
       <div
@@ -112,13 +104,13 @@ export default function RandomNotes() {
           onConfidentPitchChange={handlePitchChange}
           onImmediatePitchChange={() => {}}
           formatMidiNote={(value) => {
-            return formatMidiNote(value, preferFlats);
+            return formatMidiNote(value, options.preferFlats);
           }}
         />
 
         <PitchStringView
           notes={currentNotes}
-          preferFlats={preferFlats}
+          preferFlats={options.preferFlats}
           hide={hideNames}
           selectedNoteIndex={selectedNoteIndex}
           tempNoteIndex={tempNoteIndex}
@@ -129,36 +121,13 @@ export default function RandomNotes() {
           setTempNoteIndex={setSelectedNoteIndex}
         />
       </div>
-
-      <FretBoard highlighted={highlights} />
-
       <Button className="w-full max-w-lg" onClick={handleGenerateNewNotes}>
         generate!
       </Button>
 
-      <Collapsible className="w-full max-w-lg mt-4 mx-4">
-        <CollapsibleTrigger asChild>
-          <Button variant="outline" className="w-full">
-            options
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="flex justify-between gap-4 w-full p-8">
-            <Button
-              className=""
-              onClick={() => setViewMode((viewMode + 1) % viewModes.length)}
-            >
-              view: {viewModes[viewMode]}
-            </Button>
-            <Button className="" onClick={() => setIsStrict(!isStrict)}>
-              pitch detection: {isStrict ? "strict" : "lenient"}
-            </Button>
-            <Button className="" onClick={() => setPreferFlats(!preferFlats)}>
-              prefer: {accidentalUnicode[preferFlats ? "b" : "#"]}
-            </Button>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+      <FretBoard highlighted={highlights} />
+
+      <RandomNotesOptions options={options} setOptions={setOptions} />
     </div>
   );
 }
