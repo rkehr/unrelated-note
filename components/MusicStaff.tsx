@@ -71,7 +71,6 @@ export default function MusicStaff({
       }
 
       if (index % measuresPerRow === 0 && !isFirstMeasure) {
-        console.log("new line");
         newLine();
       }
       const system = appendSystem(measureWidth);

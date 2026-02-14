@@ -11,6 +11,7 @@ import PitchDetector from "./PitchDetector";
 import MidiNoteStave from "./MidiNoteStave";
 import PitchStringView from "./PitchStringView";
 import { useWakeLock } from "react-screen-wake-lock";
+import { RefreshCcwDot, RotateCcwKey } from "lucide-react";
 
 export default function RandomNotes() {
   const [numNotes, setNumNotes] = useState(8);
@@ -94,20 +95,28 @@ export default function RandomNotes() {
   return (
     <div className="flex flex-col items-center w-full h-full justify-between">
       <div className={`bg-white transition-opacity }`}>
+        <div className="flex gap-2 w-full justify-start">
+          <PitchDetector
+            onPitchChange={handlePitchChange}
+            formatMidiNote={(value) => {
+              return formatMidiNote(value, options.preferFlats);
+            }}
+          />
+
+          <button
+            onClick={handleGenerateNewNotes}
+            className={`flex justify-center items-center h-12 w-12 bg-foreground text-background border-3 border-foreground rounded-full transition-colors hover:text-foreground hover:bg-background cursor-pointer`}
+          >
+            <RefreshCcwDot />
+          </button>
+        </div>
+
         <MidiNoteStave notes={currentNotes} preferFlats={options.preferFlats} />
       </div>
 
       <div
         className={`text-5xl font-bold flex justify-evenly align-baseline gap-16 shrink-0 `}
       >
-        <PitchDetector
-          onConfidentPitchChange={handlePitchChange}
-          onImmediatePitchChange={() => {}}
-          formatMidiNote={(value) => {
-            return formatMidiNote(value, options.preferFlats);
-          }}
-        />
-
         <PitchStringView
           notes={currentNotes}
           preferFlats={options.preferFlats}
@@ -121,9 +130,6 @@ export default function RandomNotes() {
           setTempNoteIndex={setSelectedNoteIndex}
         />
       </div>
-      <Button className="w-full max-w-lg" onClick={handleGenerateNewNotes}>
-        generate!
-      </Button>
 
       <FretBoard highlighted={highlights} />
 

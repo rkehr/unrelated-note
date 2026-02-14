@@ -5,8 +5,7 @@ import Pitchfinder from "pitchfinder";
 import { AudioWaveform, Ear } from "lucide-react";
 
 interface PitchDetectorProps {
-  onImmediatePitchChange: (value: number | null) => void;
-  onConfidentPitchChange: (value: number | null) => void;
+  onPitchChange: (value: number | null) => void;
   formatMidiNote: (value: number | null) => ReactNode;
 }
 
@@ -27,17 +26,14 @@ function PitchDetector(props: PitchDetectorProps) {
     note: null,
     count: 0,
   });
-  const CONFIDENCE_THRESHOLD = 16; // ~130ms at 60fps
+  const CONFIDENCE_THRESHOLD = 2;
+  const { onPitchChange } = props;
 
-  const { onConfidentPitchChange, onImmediatePitchChange } = props;
-
-  const onConfidentPitchChangeRef = useRef(onConfidentPitchChange);
-  const onImmediatePitchChangeRef = useRef(onConfidentPitchChange);
+  const onPitchChangeRef = useRef(onPitchChange);
 
   useEffect(() => {
-    onConfidentPitchChangeRef.current = onConfidentPitchChange;
-    onImmediatePitchChangeRef.current = onConfidentPitchChange;
-  }, [onConfidentPitchChange, onImmediatePitchChange]);
+    onPitchChangeRef.current = onPitchChange;
+  }, [onPitchChange]);
 
   // Convert frequency (Hz) to MIDI note number
   const frequencyToMidi = (frequency: number): number => {
@@ -53,7 +49,7 @@ function PitchDetector(props: PitchDetectorProps) {
       audioContextRef.current = audioContext;
 
       const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 2048;
+      analyser.fftSize = 4096;
       analyserRef.current = analyser;
 
       const source = audioContext.createMediaStreamSource(stream);
@@ -61,6 +57,7 @@ function PitchDetector(props: PitchDetectorProps) {
 
       const detectPitch = Pitchfinder.YIN({
         sampleRate: audioContext.sampleRate,
+        threshold: 0.005,
       });
       detectPitchRef.current = detectPitch;
 
@@ -109,12 +106,11 @@ function PitchDetector(props: PitchDetectorProps) {
       if (currentMidiNote === noteCounterRef.current.note) {
         noteCounterRef.current.count++;
         if (noteCounterRef.current.count === CONFIDENCE_THRESHOLD) {
-          onConfidentPitchChangeRef.current(currentMidiNote);
+          onPitchChangeRef.current(currentMidiNote);
+          setPreviousMidiNote(currentMidiNote);
         }
       } else {
         noteCounterRef.current = { note: currentMidiNote, count: 1 };
-        setPreviousMidiNote(currentMidiNote);
-        onImmediatePitchChangeRef.current(currentMidiNote);
       }
 
       animationFrameRef.current = requestAnimationFrame(detect);
@@ -155,7 +151,7 @@ function PitchDetector(props: PitchDetectorProps) {
     <div className="pitch-detector">
       <button
         onClick={isListening ? stopListening : startListening}
-        className={`text-xl flex justify-center items-center relative overflow-clip h-12 w-12 bg-background text-foreground border-3 border-foreground rounded-full transition-colors hover:text-background ${isListening ? "hover:bg-red-900" : "hover:bg-green-900"} `}
+        className={`text-xl flex justify-center items-center cursor-pointer relative overflow-clip h-12 w-12 bg-background text-foreground border-3 border-foreground rounded-full transition-colors hover:text-background ${isListening ? "hover:bg-red-900" : "hover:bg-green-900"} `}
       >
         <div className="relative z-10">
           {isListening ? (
