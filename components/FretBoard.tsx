@@ -1,7 +1,6 @@
+"use client";
 import { useState } from "react";
 import FretBoardString, { HighlightedFret } from "./FretBoardString";
-import { pitchToLabel } from "./PitchLabel";
-import { valueToNote } from "./RandomNotes";
 import {
   Select,
   SelectContent,
@@ -9,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { pitchToLabel, valueToNote } from "@/utils/functions";
 
 interface FretBoardProps {
   highlighted?: HighlightedFret[];

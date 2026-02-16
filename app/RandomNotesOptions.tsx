@@ -1,10 +1,10 @@
-import { accidentalUnicode } from "@/components/PitchLabel";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { accidentalUnicode } from "@/utils/functions";
 import { SetStateAction, Dispatch } from "react";
 
 interface RandomNotesOptionsProps {

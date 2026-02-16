@@ -1,4 +1,4 @@
-import { Pitch } from "./RandomNotes";
+import { Pitch, pitchToLabel } from "@/utils/functions";
 
 interface PitchLabelProps {
   pitch: Pitch;
@@ -8,14 +8,3 @@ export default function PitchLabel(props: PitchLabelProps) {
   const { pitch, explicitNatural } = props;
   return <span>{pitchToLabel(pitch, explicitNatural)}</span>;
 }
-
-export const pitchToLabel = (pitch: Pitch, explicitNatural?: boolean) =>
-  `${pitch.letter}${pitch.accidental || (explicitNatural ? "n" : "")}${pitch.octave}`;
-
-export const accidentalUnicode = {
-  bb: "♭♭",
-  b: "♭",
-  "": "",
-  "#": "♯",
-  "##": "♯♯",
-};

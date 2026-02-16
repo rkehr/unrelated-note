@@ -1,6 +1,5 @@
+import { pitchClassToLabel, valueToNote } from "@/utils/functions";
 import { CheckCircle } from "lucide-react";
-import { valueToNote } from "./RandomNotes";
-import { pitchClassToLabel } from "./PitchClassLabel";
 import { Dispatch, SetStateAction } from "react";
 
 interface PitchStringViewProps {

@@ -1,6 +1,5 @@
+import { NoteLetter, pitchToLabel, valueToNote } from "@/utils/functions";
 import MusicStaff from "./MusicStaff";
-import { pitchToLabel } from "./PitchLabel";
-import { NoteLetter, valueToNote } from "./RandomNotes";
 
 interface MidiNoteStaveProps {
   notes: number[];
