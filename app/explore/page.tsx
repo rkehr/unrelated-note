@@ -9,10 +9,21 @@ import {
   SCALES,
   valueToOklch,
 } from "@/lib/scales";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function FretBoardExplorer() {
   const [selectedPitch, setSelectedPitch] = useState<Pitch | null>(null);
+  const [selectedScale, setSelectedScale] =
+    useState<keyof typeof SCALES>("MAJOR");
+
   const [tempPitch, setTempPitch] = useState<Pitch | null>(null);
 
   const highlights: HighlightedFret[] = [];
@@ -29,14 +40,11 @@ export default function FretBoardExplorer() {
     if (!selectedPitch) {
       return;
     }
-    return applyScale(selectedPitch, SCALES.MAJOR);
-  }, [selectedPitch]);
+    return applyScale(selectedPitch, SCALES[selectedScale]);
+  }, [selectedPitch, selectedScale]);
 
   if (currentScale) {
     currentScale.forEach((pitchClass, index) => {
-      if (index % 2 !== 0) {
-        return;
-      }
       const value = pitchClassValue(pitchClass);
       highlights.push({
         color: valueToOklch(value),
@@ -48,6 +56,29 @@ export default function FretBoardExplorer() {
 
   return (
     <div>
+      <h2 className="text-2xl font-bold ml-8 mt-8">fretboard explorer</h2>
+      <FretBoard highlighted={highlights} />
+
+      <h3 className="text-xl font-bold ml-8 mt-8">select scale</h3>
+      <Select
+        value={selectedScale}
+        onValueChange={(value) =>
+          setSelectedScale(value as keyof typeof SCALES)
+        }
+      >
+        <SelectTrigger className="w-[200px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(SCALES).map(([key, scale]) => (
+            <SelectItem key={key} value={key}>
+              {scale.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <h3 className="text-xl font-bold ml-8 mt-8">select root</h3>
       <KeyBoard
         onKeyClick={(pitch) => setSelectedPitch(pitch)}
         onKeyMouseEnter={(pitch) => setTempPitch(pitch)}
@@ -57,7 +88,12 @@ export default function FretBoardExplorer() {
           }
         }}
       />
-      <FretBoard highlighted={highlights} />
+
+      <div className="opacity-50 flex justify-around m-4">
+        <Link href="imprint">imprint</Link>
+        <Link href="support">support</Link>
+        <Link href="https://robinkehr.de/">@akaz</Link>
+      </div>
     </div>
   );
 }

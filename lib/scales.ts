@@ -109,11 +109,73 @@ export const SCALES: Record<string, Scale> = {
       "locrian",
     ],
   },
+  MINOR: {
+    name: "minor",
+    degrees: [
+      SCALE_DEGREES.PRIMA,
+      SCALE_DEGREES.MAJOR_SECOND,
+      SCALE_DEGREES.MINOR_THIRD,
+      SCALE_DEGREES.PERFECT_FOURTH,
+      SCALE_DEGREES.PERFECT_FIFTH,
+      SCALE_DEGREES.MINOR_SIXTH,
+      SCALE_DEGREES.MINOR_SEVENTH,
+    ],
+    modes: [],
+  },
+  HARMONIC_MINOR: {
+    name: "harmonic minor",
+    degrees: [
+      SCALE_DEGREES.PRIMA,
+      SCALE_DEGREES.MAJOR_SECOND,
+      SCALE_DEGREES.MINOR_THIRD,
+      SCALE_DEGREES.PERFECT_FOURTH,
+      SCALE_DEGREES.PERFECT_FIFTH,
+      SCALE_DEGREES.MINOR_SIXTH,
+      SCALE_DEGREES.MAJOR_SEVENTH,
+    ],
+    modes: [],
+  },
+  MELODIC_MINOR: {
+    name: "melodic minor",
+    degrees: [
+      SCALE_DEGREES.PRIMA,
+      SCALE_DEGREES.MAJOR_SECOND,
+      SCALE_DEGREES.MINOR_THIRD,
+      SCALE_DEGREES.PERFECT_FOURTH,
+      SCALE_DEGREES.PERFECT_FIFTH,
+      SCALE_DEGREES.MAJOR_SIXTH,
+      SCALE_DEGREES.MAJOR_SEVENTH,
+    ],
+    modes: [],
+  },
+  MAJOR_PENTATONIC: {
+    name: "major pentatonic",
+    degrees: [
+      SCALE_DEGREES.PRIMA,
+      SCALE_DEGREES.MAJOR_SECOND,
+      SCALE_DEGREES.MAJOR_THIRD,
+      SCALE_DEGREES.PERFECT_FIFTH,
+      SCALE_DEGREES.MAJOR_SIXTH,
+    ],
+    modes: [],
+  },
+  MINOR_PENTATONIC: {
+    name: "minor pentatonic",
+    degrees: [
+      SCALE_DEGREES.PRIMA,
+      SCALE_DEGREES.MINOR_THIRD,
+      SCALE_DEGREES.PERFECT_FOURTH,
+      SCALE_DEGREES.PERFECT_FIFTH,
+      SCALE_DEGREES.MINOR_SEVENTH,
+    ],
+    modes: [],
+  },
 };
 
 export function applyScale(pitchClass: PitchClass, scale: Scale): PitchClass[] {
   const rootValue = pitchClassValue(pitchClass);
   const pitches = scale.degrees.map((scaleDegree): PitchClass => {
+    console.log(scaleDegree);
     const value = rootValue + scaleDegree.valueDelta;
     const letter = applyLetterDelta(pitchClass.letter, scaleDegree.letterDelta);
     const letterValue = letterValues[letter];
@@ -184,6 +246,6 @@ function applyLetterDelta(letter: NoteLetter, delta: number) {
 }
 
 export function valueToOklch(n: number): string {
-  const hue = (n / 12) * 360;
-  return `oklch(0.7 0.25 ${hue})`;
+  const hue = (n / 13) * 360;
+  return `oklch(0.7 0.45 ${hue})`;
 }
