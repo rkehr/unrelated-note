@@ -95,7 +95,7 @@ export default function RandomNotes() {
         <OptionPageDialog />
       </div>
       <div className={`bg-white transition-opacity }`}>
-        <div className="flex gap-2 justify-start">
+        <div className="flex gap-2 ml-4 justify-start">
           <PitchDetector
             onPitchChange={handlePitchChange}
             formatMidiNote={(value) => {

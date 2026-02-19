@@ -6,10 +6,11 @@ export interface Options {
   hideNoteNames: boolean;
   showNextNoteLocation: boolean;
   isStrict: boolean;
-  preferFlats: boolean;
-  pearlColorByDegree: boolean;
   fretBoardLayout: keyof typeof stringSets;
   numNotes: number;
+  pearlColorByDegree: boolean;
+  preferFlats: boolean;
+  preventRepeats: boolean;
 }
 
 const defaultOptions: Options = {
@@ -20,6 +21,7 @@ const defaultOptions: Options = {
   pearlColorByDegree: false,
   fretBoardLayout: "guitar standard",
   numNotes: 8,
+  preventRepeats: false,
 };
 
 export function useOptions() {

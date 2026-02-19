@@ -123,3 +123,15 @@
     @apply bg-background text-foreground font-sans;
   }
 }
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -2rem;
+  pointer-events: none;
+  background: url("/textures/paper.jpg") repeat;
+  background-size: cover;
+  opacity: 0.25;
+  mix-blend-mode: multiply;
+  z-index: 100;
+}

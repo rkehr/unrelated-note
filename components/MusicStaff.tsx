@@ -124,10 +124,9 @@ export default function MusicStaff(props: MusicStaffProps) {
   return <div ref={containerRef} id={containerId} />;
 }
 
-const FONT_SIZE = 20;
+const FONT_SIZE = 16;
 const annotation = (text: string, color: string) =>
   new Annotation(text)
-    // .setFont(Font.SERIF, FONT_SIZE, "bold")
     .setStyle({ fillStyle: color })
     .setFontSize(FONT_SIZE)
     .setVerticalJustification(Annotation.VerticalJustify.BOTTOM);
