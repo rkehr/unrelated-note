@@ -15,6 +15,7 @@ import {
 } from "@/utils/functions";
 import OptionPageDialog from "./OptionPage";
 import { useOptions } from "@/hooks/useOptions";
+import TimerButton from "./TimerButton";
 
 export default function RandomNotes() {
   const [currentNotes, setCurrentNotes] = useState<number[]>([69, 69, 69, 69]);
@@ -109,6 +110,11 @@ export default function RandomNotes() {
           >
             <RefreshCcwDot />
           </button>
+          <TimerButton
+            onTimerComplete={() => {
+              handleGenerateNewNotes();
+            }}
+          />
         </div>
 
         <MidiNoteStave

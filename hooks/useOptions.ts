@@ -11,6 +11,7 @@ export interface Options {
   pearlColorByDegree: boolean;
   preferFlats: boolean;
   preventRepeats: boolean;
+  timerSec: number;
 }
 
 const defaultOptions: Options = {
@@ -22,6 +23,7 @@ const defaultOptions: Options = {
   fretBoardLayout: "guitar standard",
   numNotes: 8,
   preventRepeats: false,
+  timerSec: 12,
 };
 
 export function useOptions() {
