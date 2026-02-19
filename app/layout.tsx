@@ -29,10 +29,12 @@ export default function RootLayout({
       <body className={` ${edwin.variable} antialiased `}>
         <div className="flex flex-col w-screen min-h-screen">
           <div className="w-full flex flex-col">
-            <div className="text-xl font-bold text-center">on an</div>
-            <h1 className="text-5xl font-bold text-center">unrelated note</h1>
+            <div className="text-xl font-bold text-center"></div>
+            <h1 className="text-5xl font-bold text-center mt-8">
+              on an unrelated note
+            </h1>
             <div className="text-xl font-bold text-center">
-              (a fretboard trainer)
+              a fretboard trainer
             </div>
           </div>
           {children}

@@ -133,5 +133,5 @@ body::before {
   background-size: cover;
   opacity: 0.15;
   mix-blend-mode: multiply;
-  z-index: 100;
+  z-index: 20;
 }
