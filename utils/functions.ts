@@ -172,6 +172,9 @@ export const pitchClassToLabel = (pitchClass: PitchClass) =>
   `${pitchClass.letter}${accidentalUnicode[pitchClass.accidental]}`;
 
 export const pitchToLabel = (pitch: Pitch, explicitNatural?: boolean) =>
+  `${pitch.letter}${accidentalUnicode[pitch.accidental] || (explicitNatural ? "n" : "")}${pitch.octave}`;
+
+export const pitchToEasyScore = (pitch: Pitch, explicitNatural?: boolean) =>
   `${pitch.letter}${pitch.accidental || (explicitNatural ? "n" : "")}${pitch.octave}`;
 
 export const accidentalUnicode = {

@@ -147,7 +147,7 @@ export default function OptionPageDialog() {
           <Cog />
         </button>
       </DialogTrigger>
-      <DialogContent className="md:max-w-4xl overflow-y-auto max-h-[calc(100vh-2rem)]">
+      <DialogContent className="md:max-w-4xl overflow-y-auto max-h-[calc(100vh-4rem)]">
         <DialogTitle className="text-2xl">options</DialogTitle>
         <OptionPage />
       </DialogContent>

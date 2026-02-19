@@ -34,6 +34,7 @@ export default function RandomNotes() {
 
   const handleGenerateNewNotes = () => {
     setCurrentNotes(generateNotes(options.numNotes));
+    setCorrectlyPlayedIndex(-1);
     setSelectedNoteIndex(null);
   };
 
@@ -76,7 +77,6 @@ export default function RandomNotes() {
     if (value % 12 === targetNote % 12) {
       if (correctlyPlayedIndex + 1 === currentNotes.length - 1) {
         handleGenerateNewNotes();
-        setCorrectlyPlayedIndex(-1);
         return;
       }
       setCorrectlyPlayedIndex(correctlyPlayedIndex + 1);
@@ -111,25 +111,29 @@ export default function RandomNotes() {
           </button>
         </div>
 
-        <MidiNoteStave notes={currentNotes} preferFlats={options.preferFlats} />
-      </div>
-
-      <div
-        className={`text-5xl font-bold flex justify-evenly align-baseline gap-16 shrink-0 `}
-      >
-        <PitchStringView
+        <MidiNoteStave
           notes={currentNotes}
           preferFlats={options.preferFlats}
-          hide={options.hideNoteNames}
-          selectedNoteIndex={selectedNoteIndex}
-          tempNoteIndex={tempNoteIndex}
-          selectedColor={selectedColor}
-          tempColor={tempColor}
           correctlyPlayedIndex={correctlyPlayedIndex}
-          setSelectedNoteIndex={setSelectedNoteIndex}
-          setTempNoteIndex={setSelectedNoteIndex}
         />
       </div>
+
+      {/* <div */}
+      {/*   className={`text-5xl font-bold flex justify-evenly align-baseline gap-16 shrink-0 `} */}
+      {/* > */}
+      {/*   <PitchStringView */}
+      {/*     notes={currentNotes} */}
+      {/*     preferFlats={options.preferFlats} */}
+      {/*     hide={options.hideNoteNames} */}
+      {/*     selectedNoteIndex={selectedNoteIndex} */}
+      {/*     tempNoteIndex={tempNoteIndex} */}
+      {/*     selectedColor={selectedColor} */}
+      {/*     tempColor={tempColor} */}
+      {/*     correctlyPlayedIndex={correctlyPlayedIndex} */}
+      {/*     setSelectedNoteIndex={setSelectedNoteIndex} */}
+      {/*     setTempNoteIndex={setSelectedNoteIndex} */}
+      {/*   /> */}
+      {/* </div> */}
 
       <FretBoard highlighted={highlights} />
     </div>

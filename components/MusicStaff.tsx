@@ -1,24 +1,33 @@
 "use client";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Barline, Factory, Registry, System } from "vexflow";
+import { useOptions } from "@/hooks/useOptions";
+import { useEffect, useId, useRef } from "react";
+import { Annotation, BarlineType, Factory, Font } from "vexflow";
 
 interface MusicStaffProps {
   notes: string;
+  labels?: string[];
   width?: number;
   height?: number;
   clef?: "treble" | "bass" | "alto" | "tenor" | "percussion";
   timeSignature?: string;
+  correctlyPlayedIndex?: number;
 }
 
-export default function MusicStaff({
-  notes,
-  width = 600,
-  height = 100,
-  clef = "treble",
-  timeSignature = "4/4",
-}: MusicStaffProps) {
+export default function MusicStaff(props: MusicStaffProps) {
+  const {
+    notes,
+    labels,
+    width = 600,
+    height = 100,
+    clef = "treble",
+    timeSignature = "4/4",
+    correctlyPlayedIndex,
+  } = props;
+
   const containerRef = useRef<HTMLDivElement>(null);
   const containerId = useId();
+  const { options } = useOptions();
+  const { hideNoteNames } = options;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -33,7 +42,7 @@ export default function MusicStaff({
       renderer: {
         elementId: containerId,
         width,
-        height: numRows * 100,
+        height: numRows * 125,
       },
     });
     const score = f.EasyScore();
@@ -57,10 +66,10 @@ export default function MusicStaff({
 
     score.set({ time: timeSignature });
 
-    measures.forEach((notes, index) => {
-      const isFirstMeasure = index === 0;
-      const isLastMeasure = index === measures.length - 1;
-      const isFirstRow = index < measuresPerRow;
+    measures.forEach((easyScore, measureIndex) => {
+      const isFirstMeasure = measureIndex === 0;
+      const isLastMeasure = measureIndex === measures.length - 1;
+      const isFirstRow = measureIndex < measuresPerRow;
 
       let measureWidth = usableWidth / measuresPerRow;
       if (isFirstRow) {
@@ -70,24 +79,55 @@ export default function MusicStaff({
         measureWidth += clefReserve;
       }
 
-      if (index % measuresPerRow === 0 && !isFirstMeasure) {
+      if (measureIndex % measuresPerRow === 0 && !isFirstMeasure) {
         newLine();
       }
       const system = appendSystem(measureWidth);
+      const notes = score.notes(easyScore);
+      notes.forEach((note, noteIndex) => {
+        const index = measureIndex * 4 + noteIndex;
+        const label = labels?.[index];
+        let color = hideNoteNames ? "transparent" : "black";
+        if (index <= (correctlyPlayedIndex ?? -1)) {
+          color = "green";
+        }
+
+        if (label) {
+          note.addModifier(annotation(label, color));
+        }
+      });
 
       const stave = system.addStave({
-        voices: [score.voice(score.notes(notes))],
+        voices: [score.voice(notes)],
       });
       if (isFirstMeasure) {
         stave.addClef(clef).addTimeSignature(timeSignature);
       }
       if (isLastMeasure) {
-        stave.addEndModifier(new Barline("end"));
+        stave.setEndBarType(BarlineType.END);
       }
     });
 
     f.draw();
-  }, [notes, width, height, clef, timeSignature, containerId]);
+  }, [
+    notes,
+    width,
+    height,
+    clef,
+    timeSignature,
+    containerId,
+    labels,
+    hideNoteNames,
+    correctlyPlayedIndex,
+  ]);
 
   return <div ref={containerRef} id={containerId} />;
 }
+
+const FONT_SIZE = 20;
+const annotation = (text: string, color: string) =>
+  new Annotation(text)
+    // .setFont(Font.SERIF, FONT_SIZE, "bold")
+    .setStyle({ fillStyle: color })
+    .setFontSize(FONT_SIZE)
+    .setVerticalJustification(Annotation.VerticalJustify.BOTTOM);

@@ -1,12 +1,18 @@
-import { NoteLetter, pitchToLabel, valueToNote } from "@/utils/functions";
+import {
+  NoteLetter,
+  pitchClassToLabel,
+  pitchToEasyScore,
+  valueToNote,
+} from "@/utils/functions";
 import MusicStaff from "./MusicStaff";
 
 interface MidiNoteStaveProps {
   notes: number[];
   preferFlats: boolean;
+  correctlyPlayedIndex: number;
 }
 export default function MidiNoteStave(props: MidiNoteStaveProps) {
-  const { notes, preferFlats } = props;
+  const { notes, preferFlats, correctlyPlayedIndex } = props;
   const pitches = notes.map((pitch) =>
     valueToNote(pitch, {
       prefer: preferFlats ? "flats" : "sharps",
@@ -14,23 +20,30 @@ export default function MidiNoteStave(props: MidiNoteStaveProps) {
     }),
   );
   const noteHasAccidental: Partial<Record<NoteLetter, boolean>> = {};
-  const pitchLabels = pitches
+  const easyScore = pitches
     .map((pitch) => {
       if (pitch.accidental !== "") {
         noteHasAccidental[pitch.letter] = true;
       }
       if (noteHasAccidental[pitch.letter] && pitch.accidental === "") {
         noteHasAccidental[pitch.letter] = false;
-        return pitchToLabel(pitch, true);
+        return pitchToEasyScore(pitch, true);
       }
-      return pitchToLabel(pitch);
+      return pitchToEasyScore(pitch);
     })
     .map((label) => label + "/q");
 
-  const barredPitches = addBarLines(pitchLabels);
+  const barredPitches = addBarLines(easyScore);
+  const labels = pitches.map((pitch, index) => pitchClassToLabel(pitch));
 
   const staffPitches = barredPitches.join(", ");
-  return <MusicStaff notes={staffPitches} />;
+  return (
+    <MusicStaff
+      notes={staffPitches}
+      labels={labels}
+      correctlyPlayedIndex={correctlyPlayedIndex}
+    />
+  );
 }
 
 function addBarLines(notes: string[], notesPerBar: number = 4) {
