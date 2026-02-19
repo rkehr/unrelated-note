@@ -103,18 +103,17 @@ export default function RandomNotes() {
               return formatMidiNote(value, options.preferFlats);
             }}
           />
-
+          <TimerButton
+            onTimerComplete={() => {
+              handleGenerateNewNotes();
+            }}
+          />
           <button
             onClick={handleGenerateNewNotes}
             className={`flex justify-center items-center h-12 w-12 bg-foreground text-background border-3 border-foreground rounded-full transition-colors hover:text-foreground hover:bg-background cursor-pointer`}
           >
             <RefreshCcwDot />
           </button>
-          <TimerButton
-            onTimerComplete={() => {
-              handleGenerateNewNotes();
-            }}
-          />
         </div>
 
         <MidiNoteStave
