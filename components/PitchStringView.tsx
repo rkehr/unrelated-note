@@ -43,7 +43,7 @@ export default function PitchStringView(props: PitchStringViewProps) {
       return pitchClassLabels.slice(index * 4, index * 4 + 4);
     });
   return (
-    <div className="flex flex-wrap align-center gap-x-16 gap-y-4">
+    <div className="flex flex-wrap items-center gap-x-16 gap-y-4">
       {labelGroups.map((group, groupIndex) => {
         return (
           <div key={groupIndex} className="flex gap-4">

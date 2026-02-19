@@ -246,5 +246,5 @@ function applyLetterDelta(letter: NoteLetter, delta: number) {
 
 export function valueToOklch(n: number): string {
   const hue = (n / 13) * 360;
-  return `oklch(0.7 0.45 ${hue})`;
+  return `oklch(0.5 0.25 ${hue})`;
 }

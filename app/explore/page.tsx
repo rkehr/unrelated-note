@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useOptions } from "@/hooks/useOptions";
+import OptionPageDialog from "@/components/OptionPage";
 
 export default function FretBoardExplorer() {
   const [selectedPitch, setSelectedPitch] = useState<Pitch | null>(null);
@@ -43,20 +45,28 @@ export default function FretBoardExplorer() {
     return applyScale(selectedPitch, SCALES[selectedScale]);
   }, [selectedPitch, selectedScale]);
 
+  const { options } = useOptions();
+
   if (currentScale) {
     currentScale.forEach((pitchClass, index) => {
       const value = pitchClassValue(pitchClass);
       highlights.push({
         color: valueToOklch(value),
         pitchClass: value,
-        label: index === 0 ? pitchClassToLabel(pitchClass) : index + 1 + "",
+        label:
+          index === 0 || !options.pearlColorByDegree
+            ? pitchClassToLabel(pitchClass)
+            : index + 1 + "",
       });
     });
   }
 
   return (
     <div>
-      <h2 className="text-2xl font-bold ml-8 mt-8">fretboard explorer</h2>
+      <div className="flex justify-between items-center px-8">
+        <h2 className="text-2xl font-bold ">fretboard explorer</h2>
+        <OptionPageDialog />
+      </div>
       <FretBoard highlighted={highlights} />
 
       <h3 className="text-xl font-bold ml-8 mt-8">select scale</h3>

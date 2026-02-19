@@ -32,9 +32,9 @@ export default function FretBoardString(props: FretBoardStringProps) {
               <div className="absolute inset-0 flex justify-center items-center">
                 <div
                   style={{ background: highlight.color }}
-                  className={`w-5 h-5 rounded-full relative flex items-center justify-center`}
+                  className={`w-6 h-6 rounded-full relative flex items-center justify-center shadow-xs text-background`}
                 >
-                  <div className=" text-xs font-bold text-center">
+                  <div className=" text-xs font-bold relative top-[1px]">
                     {highlight.label}
                   </div>
                 </div>

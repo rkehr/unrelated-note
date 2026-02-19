@@ -90,24 +90,25 @@ export default function RandomNotes() {
 
   return (
     <div className="flex flex-col items-center w-full h-full justify-between">
+      <div className="w-full flex justify-between items-center px-8 py-8">
+        <h2 className="text-2xl font-bold ">random note sequence</h2>
+        <OptionPageDialog />
+      </div>
       <div className={`bg-white transition-opacity }`}>
-        <div className="flex gap-2 w-full justify-between px-4">
-          <div className="flex gap-2 justify-start">
-            <PitchDetector
-              onPitchChange={handlePitchChange}
-              formatMidiNote={(value) => {
-                return formatMidiNote(value, options.preferFlats);
-              }}
-            />
+        <div className="flex gap-2 justify-start">
+          <PitchDetector
+            onPitchChange={handlePitchChange}
+            formatMidiNote={(value) => {
+              return formatMidiNote(value, options.preferFlats);
+            }}
+          />
 
-            <button
-              onClick={handleGenerateNewNotes}
-              className={`flex justify-center items-center h-12 w-12 bg-foreground text-background border-3 border-foreground rounded-full transition-colors hover:text-foreground hover:bg-background cursor-pointer`}
-            >
-              <RefreshCcwDot />
-            </button>
-          </div>
-          <OptionPageDialog />
+          <button
+            onClick={handleGenerateNewNotes}
+            className={`flex justify-center items-center h-12 w-12 bg-foreground text-background border-3 border-foreground rounded-full transition-colors hover:text-foreground hover:bg-background cursor-pointer`}
+          >
+            <RefreshCcwDot />
+          </button>
         </div>
 
         <MidiNoteStave notes={currentNotes} preferFlats={options.preferFlats} />
