@@ -1,33 +1,33 @@
+import { compare, Pitch, PitchClass } from "@/utils/functions";
+
 interface FretBoardStringProps {
   rootValue?: number;
   numFrets?: number;
-  selectedClassValues?: number[];
   highlighted: HighlightedFret[];
 }
 
 export default function FretBoardString(props: FretBoardStringProps) {
-  const {
-    rootValue = 60,
-    numFrets = 12,
-    selectedClassValues = [4, 8, 11],
-    highlighted = [],
-  } = props;
-  const selectedFrets = Array(numFrets)
+  const { rootValue = 60, numFrets = 12, highlighted = [] } = props;
+  const selectedFrets = Array(numFrets + 1)
     .fill(false)
     .map((_, index) => {
-      selectedClassValues.includes(((rootValue % 12) + index + 1) % 12);
-      const hightlight = highlighted.find(
-        ({ pitchClass }) => ((rootValue % 12) + index + 1) % 12 === pitchClass,
+      const hightlight = highlighted.find(({ value }) =>
+        compare(rootValue + index, value),
       );
       return hightlight;
     });
   return (
-    <div className="grow flex gap-1 justify-stretch w-full relative z-10">
+    <div className="grow flex  justify-stretch w-full relative z-10">
       <div className="absolute top-1/2 left-0 right-0 bg-foreground h-[1px]" />
 
       {selectedFrets.map((highlight, index) => {
         return (
-          <div key={index} className="grow relative">
+          <div
+            key={index}
+            className={
+              index === 0 ? "absolute -left-9 w-8 top-3.5" : "grow relative"
+            }
+          >
             {highlight && (
               <div className="absolute inset-0 flex justify-center items-center">
                 <div
@@ -50,5 +50,5 @@ export default function FretBoardString(props: FretBoardStringProps) {
 export interface HighlightedFret {
   label: string;
   color: string;
-  pitchClass: number;
+  value: Pitch | PitchClass;
 }

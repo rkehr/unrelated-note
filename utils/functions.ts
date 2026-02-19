@@ -10,9 +10,9 @@ export function highlightFromValue(
     forceNaturals: true,
   });
   return {
-    pitchClass: value % 12,
+    value: toPitchClass(pitch),
     label: pitchClassToLabel(pitch),
-    color: valueToOklch(value % 12),
+    color: valueToOklch(value),
   };
 }
 
@@ -115,56 +115,99 @@ export interface Pitch {
   value: number;
 }
 
+export interface PitchClass {
+  letter: NoteLetter;
+  accidental: Accidental;
+  value: number;
+}
+
+export function toPitchClass(pitch: Pitch): PitchClass {
+  const { letter, accidental, value } = pitch;
+  return {
+    letter,
+    accidental,
+    value: value % 12,
+  };
+}
+export function toPitch(pitchClass: PitchClass, octave: number): Pitch {
+  const { letter, accidental, value } = pitchClass;
+  return {
+    letter,
+    accidental,
+    octave,
+    value: value + octave * 12,
+  };
+}
+
+export function compare(
+  a: Pitch | PitchClass | number,
+  b: Pitch | PitchClass | number,
+) {
+  const valA = typeof a === "number" ? a : a.value;
+  const valB = typeof b === "number" ? b : b.value;
+  if (
+    (isPitch(a) || typeof a === "number") &&
+    (isPitch(b) || typeof b === "number")
+  ) {
+    return valA === valB;
+  }
+  return valA % 12 === valB % 12;
+}
+function isPitch(obj: Pitch | PitchClass | number): obj is Pitch {
+  if (typeof obj === "number") {
+    return false;
+  }
+  if (Object.hasOwn(obj, "octave")) {
+    return true;
+  }
+  return false;
+}
+
 export type NoteLetter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "B";
 export type Accidental = "#" | "##" | "b" | "bb" | "";
 
 export const noteRangeGuitar = { from: 52, to: 88 };
 export const noteRange = { from: 60, to: 72 };
 
-export interface PitchClass {
-  letter: NoteLetter;
-  accidental: Accidental;
-}
-
 export const noteClassByValue: PitchClass[][] = [
   [
-    { letter: "C" as const, accidental: "" as const },
-    { letter: "B" as const, accidental: "#" as const },
+    { letter: "C" as const, accidental: "" as const, value: 0 },
+    { letter: "B" as const, accidental: "#" as const, value: 0 },
   ],
   [
-    { letter: "C" as const, accidental: "#" as const },
-    { letter: "D" as const, accidental: "b" as const },
+    { letter: "C" as const, accidental: "#" as const, value: 1 },
+    { letter: "D" as const, accidental: "b" as const, value: 1 },
   ],
-  [{ letter: "D" as const, accidental: "" as const }],
+  [{ letter: "D" as const, accidental: "" as const, value: 2 }],
   [
-    { letter: "D" as const, accidental: "#" as const },
-    { letter: "E" as const, accidental: "b" as const },
-  ],
-  [
-    { letter: "E" as const, accidental: "" as const },
-    { letter: "F" as const, accidental: "b" as const },
+    { letter: "D" as const, accidental: "#" as const, value: 3 },
+    { letter: "E" as const, accidental: "b" as const, value: 3 },
   ],
   [
-    { letter: "E" as const, accidental: "#" as const },
-    { letter: "F" as const, accidental: "" as const },
+    { letter: "E" as const, accidental: "" as const, value: 4 },
+    { letter: "F" as const, accidental: "b" as const, value: 4 },
   ],
   [
-    { letter: "F" as const, accidental: "#" as const },
-    { letter: "G" as const, accidental: "b" as const },
-  ],
-  [{ letter: "G" as const, accidental: "" as const }],
-  [
-    { letter: "G" as const, accidental: "#" as const },
-    { letter: "A" as const, accidental: "b" as const },
-  ],
-  [{ letter: "A" as const, accidental: "" as const }],
-  [
-    { letter: "A" as const, accidental: "#" as const },
-    { letter: "B" as const, accidental: "b" as const },
+    { letter: "E" as const, accidental: "#" as const, value: 5 },
+    { letter: "F" as const, accidental: "" as const, value: 5 },
   ],
   [
-    { letter: "B" as const, accidental: "" as const },
-    { letter: "C" as const, accidental: "b" as const },
+    { letter: "F" as const, accidental: "#" as const, value: 6 },
+    { letter: "G" as const, accidental: "b" as const, value: 6 },
+  ],
+  [{ letter: "G" as const, accidental: "" as const, value: 7 }],
+  [
+    { letter: "G" as const, accidental: "#" as const, value: 8 },
+    { letter: "A" as const, accidental: "b" as const, value: 8 },
+  ],
+  [{ letter: "A" as const, accidental: "" as const, value: 9 }],
+  [
+    { letter: "A" as const, accidental: "#" as const, value: 10 },
+    { letter: "B" as const, accidental: "b" as const, value: 10 },
+  ],
+  [
+    { letter: "B" as const, accidental: "" as const, value: 11 },
+    { letter: "C" as const, accidental: "b" as const, value: 11 },
   ],
 ];
 

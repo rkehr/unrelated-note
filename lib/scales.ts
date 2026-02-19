@@ -184,7 +184,7 @@ export function applyScale(pitchClass: PitchClass, scale: Scale): PitchClass[] {
       letterDiff = altLetterDiff;
     }
     const accidental = accidentalByOffset(letterDiff) as Accidental;
-    return { letter, accidental };
+    return { letter, accidental, value };
   });
   return pitches;
 }
@@ -245,6 +245,6 @@ function applyLetterDelta(letter: NoteLetter, delta: number) {
 }
 
 export function valueToOklch(n: number): string {
-  const hue = (n / 13) * 360;
+  const hue = ((n % 12) / 12) * 360;
   return `oklch(0.5 0.25 ${hue})`;
 }

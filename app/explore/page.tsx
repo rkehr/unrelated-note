@@ -2,13 +2,8 @@
 import FretBoard from "@/components/FretBoard";
 import { HighlightedFret } from "@/components/FretBoardString";
 import KeyBoard from "@/components/KeyBoard";
-import { Pitch, pitchClassToLabel } from "@/utils/functions";
-import {
-  applyScale,
-  pitchClassValue,
-  SCALES,
-  valueToOklch,
-} from "@/lib/scales";
+import { Pitch, pitchClassToLabel, toPitchClass } from "@/utils/functions";
+import { applyScale, SCALES, valueToOklch } from "@/lib/scales";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
@@ -31,9 +26,8 @@ export default function FretBoardExplorer() {
   const highlights: HighlightedFret[] = [];
   if (tempPitch) {
     highlights.push({
-      color: valueToOklch(tempPitch.value % 12),
-
-      pitchClass: tempPitch.value % 12,
+      color: valueToOklch(tempPitch.value),
+      value: toPitchClass(tempPitch),
       label: pitchClassToLabel(tempPitch),
     });
   }
@@ -49,10 +43,9 @@ export default function FretBoardExplorer() {
 
   if (currentScale) {
     currentScale.forEach((pitchClass, index) => {
-      const value = pitchClassValue(pitchClass);
       highlights.push({
-        color: valueToOklch(value),
-        pitchClass: value,
+        color: valueToOklch(pitchClass.value),
+        value: pitchClass,
         label:
           index === 0 || !options.pearlColorByDegree
             ? pitchClassToLabel(pitchClass)
