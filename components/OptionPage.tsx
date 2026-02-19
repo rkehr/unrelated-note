@@ -118,7 +118,7 @@ export function OptionPage(props: OptionPageProps) {
                 })
               }
             >
-              <SelectTrigger id="numberOfNotes" className="w-50">
+              <SelectTrigger id="numberOfNotes" className="w-25">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
