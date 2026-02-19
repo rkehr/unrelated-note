@@ -131,7 +131,7 @@ body::before {
   pointer-events: none;
   background: url("/textures/paper.jpg") repeat;
   background-size: cover;
-  opacity: 0.25;
+  opacity: 0.15;
   mix-blend-mode: multiply;
   z-index: 100;
 }
