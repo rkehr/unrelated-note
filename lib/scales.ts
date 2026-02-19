@@ -175,7 +175,6 @@ export const SCALES: Record<string, Scale> = {
 export function applyScale(pitchClass: PitchClass, scale: Scale): PitchClass[] {
   const rootValue = pitchClassValue(pitchClass);
   const pitches = scale.degrees.map((scaleDegree): PitchClass => {
-    console.log(scaleDegree);
     const value = rootValue + scaleDegree.valueDelta;
     const letter = applyLetterDelta(pitchClass.letter, scaleDegree.letterDelta);
     const letterValue = letterValues[letter];

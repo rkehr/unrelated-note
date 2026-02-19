@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import FretBoard from "./FretBoard";
-import RandomNotesOptions from "@/app/RandomNotesOptions";
 import { HighlightedFret } from "./FretBoardString";
 import PitchDetector from "./PitchDetector";
 import MidiNoteStave from "./MidiNoteStave";
@@ -14,32 +13,27 @@ import {
   generateNotes,
   highlightFromValue,
 } from "@/utils/functions";
+import OptionPageDialog from "./OptionPage";
+import { useOptions } from "@/hooks/useOptions";
 
 export default function RandomNotes() {
-  const [numNotes, setNumNotes] = useState(8);
   const [currentNotes, setCurrentNotes] = useState<number[]>([69, 69, 69, 69]);
   const [correctlyPlayedIndex, setCorrectlyPlayedIndex] = useState<number>(-1);
+  const { options } = useOptions();
 
   useWakeLock({ reacquireOnPageVisible: true });
   useEffect(() => {
-    setCurrentNotes(generateNotes(numNotes));
-  }, [numNotes]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentNotes(generateNotes(options.numNotes));
+  }, [options.numNotes]);
 
   const [selectedNoteIndex, setSelectedNoteIndex] = useState<number | null>(
     null,
   );
   const [tempNoteIndex, setTempNoteIndex] = useState<number | null>(null);
 
-  const [options, setOptions] = useState({
-    viewMode: 0,
-    preferFlats: true,
-    isStrict: false,
-  });
-
-  const hideNames = viewModes[options.viewMode] === "stave";
-
   const handleGenerateNewNotes = () => {
-    setCurrentNotes(generateNotes(numNotes));
+    setCurrentNotes(generateNotes(options.numNotes));
     setSelectedNoteIndex(null);
   };
 
@@ -97,20 +91,23 @@ export default function RandomNotes() {
   return (
     <div className="flex flex-col items-center w-full h-full justify-between">
       <div className={`bg-white transition-opacity }`}>
-        <div className="flex gap-2 w-full justify-start">
-          <PitchDetector
-            onPitchChange={handlePitchChange}
-            formatMidiNote={(value) => {
-              return formatMidiNote(value, options.preferFlats);
-            }}
-          />
+        <div className="flex gap-2 w-full justify-between px-4">
+          <div className="flex gap-2 justify-start">
+            <PitchDetector
+              onPitchChange={handlePitchChange}
+              formatMidiNote={(value) => {
+                return formatMidiNote(value, options.preferFlats);
+              }}
+            />
 
-          <button
-            onClick={handleGenerateNewNotes}
-            className={`flex justify-center items-center h-12 w-12 bg-foreground text-background border-3 border-foreground rounded-full transition-colors hover:text-foreground hover:bg-background cursor-pointer`}
-          >
-            <RefreshCcwDot />
-          </button>
+            <button
+              onClick={handleGenerateNewNotes}
+              className={`flex justify-center items-center h-12 w-12 bg-foreground text-background border-3 border-foreground rounded-full transition-colors hover:text-foreground hover:bg-background cursor-pointer`}
+            >
+              <RefreshCcwDot />
+            </button>
+          </div>
+          <OptionPageDialog />
         </div>
 
         <MidiNoteStave notes={currentNotes} preferFlats={options.preferFlats} />
@@ -122,7 +119,7 @@ export default function RandomNotes() {
         <PitchStringView
           notes={currentNotes}
           preferFlats={options.preferFlats}
-          hide={hideNames}
+          hide={options.hideNoteNames}
           selectedNoteIndex={selectedNoteIndex}
           tempNoteIndex={tempNoteIndex}
           selectedColor={selectedColor}
@@ -134,10 +131,6 @@ export default function RandomNotes() {
       </div>
 
       <FretBoard highlighted={highlights} />
-
-      <RandomNotesOptions options={options} setOptions={setOptions} />
     </div>
   );
 }
-
-const viewModes = ["both", "stave"];

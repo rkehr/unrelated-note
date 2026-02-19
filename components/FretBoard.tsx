@@ -1,14 +1,7 @@
 "use client";
-import { useState } from "react";
 import FretBoardString, { HighlightedFret } from "./FretBoardString";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 import { pitchToLabel, valueToNote } from "@/utils/functions";
+import { useOptions } from "@/hooks/useOptions";
 
 interface FretBoardProps {
   highlighted?: HighlightedFret[];
@@ -20,29 +13,10 @@ export default function FretBoard(props: FretBoardProps) {
   const frets = Array(numFrets).fill(0);
   const highlighted = props.highlighted ?? [];
 
-  const [selectedTuning, setSelectedTuning] =
-    useState<keyof typeof stringSets>("guitar standard");
-
-  const stringSet = stringSets[selectedTuning].slice().reverse();
+  const { options } = useOptions();
+  const stringSet = stringSets[options.fretBoardLayout].slice().reverse();
   return (
     <div className="w-full py-8 pr-4">
-      <Select
-        value={selectedTuning}
-        onValueChange={(value) =>
-          setSelectedTuning(value as keyof typeof stringSets)
-        }
-      >
-        <SelectTrigger className="w-[200px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {Object.keys(stringSets).map((key) => (
-            <SelectItem key={key} value={key}>
-              {key}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
       <div className="relative h-40 flex w-full">
         <div className="relative h-full flex flex-col justify-evenly px-2 ">
           {stringSet.map((value, index) => (
@@ -92,15 +66,7 @@ export default function FretBoard(props: FretBoardProps) {
   );
 }
 
-const hightlightExample = [
-  { label: "R", color: "#88ff88", pitchClass: 5 },
-  { label: "M3", color: "#ff8888", pitchClass: 9 },
-  { label: "5", color: "#8888ff", pitchClass: 0 },
-  { label: "M7", color: "#ffff88", pitchClass: 4 },
-  { label: "9", color: "#88ffff", pitchClass: 7 },
-];
-
-const stringSets = {
+export const stringSets = {
   "guitar standard": [52, 57, 62, 67, 71, 76],
   "guitar drop d": [50, 57, 62, 67, 71, 76],
   "guitar dadgad": [50, 57, 62, 67, 69, 74],
