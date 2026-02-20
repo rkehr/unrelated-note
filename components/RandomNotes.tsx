@@ -95,7 +95,7 @@ export default function RandomNotes() {
         <h2 className="text-2xl font-bold ">random note sequence</h2>
         <OptionPageDialog />
       </div>
-      <div className={`bg-white transition-opacity }`}>
+      <div className={`w-full`}>
         <div className="flex gap-2 ml-4 justify-start">
           <PitchDetector
             onPitchChange={handlePitchChange}

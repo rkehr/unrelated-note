@@ -140,6 +140,7 @@ export default function OptionPageDialog() {
   return (
     <Dialog>
       <DialogTrigger
+        suppressHydrationWarning
         asChild
         className="text-xl flex justify-center items-center cursor-pointer relative overflow-clip h-12 w-12 bg-background text-foreground border-3 border-foreground rounded-full transition-colors hover:text-background hover:bg-foreground "
       >

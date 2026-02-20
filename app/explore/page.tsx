@@ -69,7 +69,7 @@ export default function FretBoardExplorer() {
           setSelectedScale(value as keyof typeof SCALES)
         }
       >
-        <SelectTrigger className="w-[200px]">
+        <SelectTrigger className="w-50">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -96,6 +96,7 @@ export default function FretBoardExplorer() {
         <Link href="imprint">imprint</Link>
         <Link href="support">support</Link>
         <Link href="https://robinkehr.de/">@akaz</Link>
+        <Link href="/">random notes</Link>
       </div>
     </div>
   );

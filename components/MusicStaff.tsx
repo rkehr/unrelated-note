@@ -1,6 +1,6 @@
 "use client";
 import { useOptions } from "@/hooks/useOptions";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Annotation, BarlineType, Factory, Font } from "vexflow";
 
 interface MusicStaffProps {
@@ -17,12 +17,12 @@ export default function MusicStaff(props: MusicStaffProps) {
   const {
     notes,
     labels,
-    width = 600,
     height = 100,
     clef = "treble",
     timeSignature = "4/4",
     correctlyPlayedIndex,
   } = props;
+  const [width, setWidth] = useState(600);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const containerId = useId();
@@ -121,7 +121,25 @@ export default function MusicStaff(props: MusicStaffProps) {
     correctlyPlayedIndex,
   ]);
 
-  return <div ref={containerRef} id={containerId} />;
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!wrapperRef.current) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const { width } = entries[0].contentRect;
+      setWidth(width);
+    });
+
+    resizeObserver.observe(wrapperRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  return (
+    <div className="w-full" ref={wrapperRef}>
+      <div ref={containerRef} id={containerId} />
+    </div>
+  );
 }
 
 const FONT_SIZE = 16;

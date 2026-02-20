@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="bg-background text-foreground flex w-screen min-h-screen">
+    <div className="bg-background text-foreground flex w-screen">
       <main className="w-full h-full flex flex-col">
         <RandomNotes />
 
@@ -11,6 +11,7 @@ export default function Home() {
           <Link href="imprint">imprint</Link>
           <Link href="support">support</Link>
           <Link href="https://robinkehr.de/">@akaz</Link>
+          <Link href="explore">fretboard explorer</Link>
         </div>
       </main>
     </div>
