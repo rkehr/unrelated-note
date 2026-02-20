@@ -5,7 +5,6 @@ import FretBoard from "./FretBoard";
 import { HighlightedFret } from "./FretBoardString";
 import PitchDetector from "./PitchDetector";
 import MidiNoteStave from "./MidiNoteStave";
-import PitchStringView from "./PitchStringView";
 import { useWakeLock } from "react-screen-wake-lock";
 import { RefreshCcwDot } from "lucide-react";
 import {
@@ -95,7 +94,7 @@ export default function RandomNotes() {
         <h2 className="text-2xl font-bold ">random note sequence</h2>
         <OptionPageDialog />
       </div>
-      <div className={`w-full`}>
+      <div className={`w-full max-w-250`}>
         <div className="flex gap-2 ml-4 justify-start">
           <PitchDetector
             onPitchChange={handlePitchChange}

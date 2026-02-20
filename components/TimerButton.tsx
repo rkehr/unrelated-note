@@ -32,7 +32,7 @@ export default function TimerButton({ onTimerComplete }: TimerButtonProps) {
       } else {
         setProgress(newProgress);
       }
-    }, 16); // ~60fps
+    }, 64);
 
     return () => clearInterval(interval);
   }, [isActive, duration, onTimerComplete]);
@@ -48,9 +48,9 @@ export default function TimerButton({ onTimerComplete }: TimerButtonProps) {
       className="relative flex justify-center items-center h-12 w-12 bg-background text-foreground border-3 border-foreground rounded-full transition-colors hover:text-background hover:bg-foreground cursor-pointer overflow-hidden"
     >
       <div
-        className="absolute inset-0 bg-purple-800/30 z-50 transition-all duration-75 ease-linear"
+        className="absolute bg-purple-800/30 inset-0 z-50 rounded-full  transition-transform duration-150 ease-linear"
         style={{
-          clipPath: `inset(${100 - progress}% 0 0 0)`,
+          transform: `scale(${progress / 100})`,
         }}
       />
 
