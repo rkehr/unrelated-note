@@ -25,7 +25,7 @@ export default function MusicStaff(props: MusicStaffProps) {
   const [width, setWidth] = useState(600);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const containerId = useId();
+  const containerId = "sheet-music-view";
   const { options } = useOptions();
   const { hideNoteNames } = options;
 
