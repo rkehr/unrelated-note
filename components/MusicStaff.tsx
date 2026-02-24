@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Annotation, BarlineType, Factory, Font } from "vexflow";
 
 interface MusicStaffProps {
-  notes: string;
+  notes: string[];
   labels?: string[];
   width?: number;
   height?: number;
@@ -35,7 +35,7 @@ export default function MusicStaff(props: MusicStaffProps) {
     containerRef.current.innerHTML = "";
 
     const measuresPerRow = 2;
-    const measures = notes.split(", |, ");
+    const measures = notes;
     const numRows = Math.ceil(measures.length / measuresPerRow);
 
     const f = new Factory({

@@ -1,6 +1,4 @@
-import { Accidental, NoteLetter, Pitch, PitchClass } from "@/utils/functions";
-import { argv0 } from "process";
-import { Note } from "vexflow";
+import { Accidental, NoteLetter, PitchClass } from "@/utils/functions";
 
 export interface Scale {
   name: string;
@@ -183,7 +181,7 @@ export function applyScale(pitchClass: PitchClass, scale: Scale): PitchClass[] {
     if (Math.abs(altLetterDiff) < Math.abs(letterDiff)) {
       letterDiff = altLetterDiff;
     }
-    const accidental = accidentalByOffset(letterDiff) as Accidental;
+    const accidental = letterDiff as Accidental;
     return { letter, accidental, value };
   });
   return pitches;
@@ -192,7 +190,7 @@ export function applyScale(pitchClass: PitchClass, scale: Scale): PitchClass[] {
 export function pitchClassValue(pitchClass: PitchClass) {
   let val = 0;
   val += letterValues[pitchClass.letter];
-  val += offsetByAccidental(pitchClass.accidental);
+  val += pitchClass.accidental;
   return val % 12;
 }
 

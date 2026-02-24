@@ -27,10 +27,10 @@ export const formatMidiNote = (value: number | null, preferFlats: boolean) => {
   return pitchToLabel(pitch);
 };
 
-export function generateNotes(numNotes: number) {
+export function generateNotes(numNotes: number, range: Range = noteRange) {
   const series = Array(numNotes)
     .fill(0)
-    .map(() => generateNote(noteRange));
+    .map(() => generateNote(range));
 
   return series;
 }
@@ -54,7 +54,7 @@ export function valueToNote(
 ): Pitch {
   const note: Pitch = {
     letter: "A",
-    accidental: "",
+    accidental: 0,
     octave: 3,
     value: 57,
   };
@@ -82,20 +82,20 @@ export const pickPitchClass = (
   const forceNaturals = options?.forceNaturals ?? true;
   const preferredAccidental = options?.prefer ?? "flats";
 
-  const naturalPick = candidates.find((pc) => pc.accidental === "");
+  const naturalPick = candidates.find((pc) => pc.accidental === 0);
   if (naturalPick && forceNaturals) {
     return naturalPick;
   }
 
   const flatPick = candidates.find(
-    (pc) => pc.accidental === "b" || pc.accidental === "bb",
+    (pc) => pc.accidental === -1 || pc.accidental === -2,
   );
   if (flatPick && preferredAccidental === "flats") {
     return flatPick;
   }
 
   const sharpPick = candidates.find(
-    (pc) => pc.accidental === "#" || pc.accidental === "##",
+    (pc) => pc.accidental === 1 || pc.accidental === 2,
   );
   if (sharpPick && preferredAccidental === "sharps") {
     return sharpPick;
@@ -163,67 +163,74 @@ function isPitch(obj: Pitch | PitchClass | number): obj is Pitch {
   return false;
 }
 
-export type NoteLetter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "B";
-export type Accidental = "#" | "##" | "b" | "bb" | "";
+export type NoteLetter = "A" | "B" | "C" | "D" | "E" | "F" | "G";
+export type Accidental = -2 | -1 | 0 | 1 | 2;
 
 export const noteRangeGuitar = { from: 52, to: 88 };
 export const noteRange = { from: 60, to: 72 };
 
 export const noteClassByValue: PitchClass[][] = [
   [
-    { letter: "C" as const, accidental: "" as const, value: 0 },
-    { letter: "B" as const, accidental: "#" as const, value: 0 },
+    { letter: "C" as const, accidental: 0 as const, value: 0 },
+    { letter: "B" as const, accidental: 1 as const, value: 0 },
   ],
   [
-    { letter: "C" as const, accidental: "#" as const, value: 1 },
-    { letter: "D" as const, accidental: "b" as const, value: 1 },
+    { letter: "C" as const, accidental: 1 as const, value: 1 },
+    { letter: "D" as const, accidental: -1 as const, value: 1 },
   ],
-  [{ letter: "D" as const, accidental: "" as const, value: 2 }],
+  [{ letter: "D" as const, accidental: 0 as const, value: 2 }],
   [
-    { letter: "D" as const, accidental: "#" as const, value: 3 },
-    { letter: "E" as const, accidental: "b" as const, value: 3 },
-  ],
-  [
-    { letter: "E" as const, accidental: "" as const, value: 4 },
-    { letter: "F" as const, accidental: "b" as const, value: 4 },
+    { letter: "D" as const, accidental: 1 as const, value: 3 },
+    { letter: "E" as const, accidental: -1 as const, value: 3 },
   ],
   [
-    { letter: "E" as const, accidental: "#" as const, value: 5 },
-    { letter: "F" as const, accidental: "" as const, value: 5 },
+    { letter: "E" as const, accidental: 0 as const, value: 4 },
+    { letter: "F" as const, accidental: -1 as const, value: 4 },
   ],
   [
-    { letter: "F" as const, accidental: "#" as const, value: 6 },
-    { letter: "G" as const, accidental: "b" as const, value: 6 },
-  ],
-  [{ letter: "G" as const, accidental: "" as const, value: 7 }],
-  [
-    { letter: "G" as const, accidental: "#" as const, value: 8 },
-    { letter: "A" as const, accidental: "b" as const, value: 8 },
-  ],
-  [{ letter: "A" as const, accidental: "" as const, value: 9 }],
-  [
-    { letter: "A" as const, accidental: "#" as const, value: 10 },
-    { letter: "B" as const, accidental: "b" as const, value: 10 },
+    { letter: "E" as const, accidental: 1 as const, value: 5 },
+    { letter: "F" as const, accidental: 0 as const, value: 5 },
   ],
   [
-    { letter: "B" as const, accidental: "" as const, value: 11 },
-    { letter: "C" as const, accidental: "b" as const, value: 11 },
+    { letter: "F" as const, accidental: 1 as const, value: 6 },
+    { letter: "G" as const, accidental: -1 as const, value: 6 },
+  ],
+  [{ letter: "G" as const, accidental: 0 as const, value: 7 }],
+  [
+    { letter: "G" as const, accidental: 1 as const, value: 8 },
+    { letter: "A" as const, accidental: -1 as const, value: 8 },
+  ],
+  [{ letter: "A" as const, accidental: 0 as const, value: 9 }],
+  [
+    { letter: "A" as const, accidental: 1 as const, value: 10 },
+    { letter: "B" as const, accidental: -1 as const, value: 10 },
+  ],
+  [
+    { letter: "B" as const, accidental: 0 as const, value: 11 },
+    { letter: "C" as const, accidental: -1 as const, value: 11 },
   ],
 ];
 
 export const pitchClassToLabel = (pitchClass: PitchClass) =>
   `${pitchClass.letter}${accidentalUnicode[pitchClass.accidental]}`;
 
-export const pitchToLabel = (pitch: Pitch, explicitNatural?: boolean) =>
-  `${pitch.letter}${accidentalUnicode[pitch.accidental] || (explicitNatural ? "n" : "")}${pitch.octave}`;
+export const pitchToLabel = (pitch: Pitch) =>
+  `${pitch.letter}${accidentalUnicode[pitch.accidental]}${pitch.octave}`;
 
 export const pitchToEasyScore = (pitch: Pitch, explicitNatural?: boolean) =>
-  `${pitch.letter}${pitch.accidental || (explicitNatural ? "n" : "")}${pitch.octave}`;
+  `${pitch.letter}${accidentalEasyScore[pitch.accidental] || (explicitNatural ? "n" : "")}${pitch.octave}`;
 
+export const accidentalEasyScore = {
+  [-2]: "bb",
+  [-1]: "b",
+  0: "",
+  1: "#",
+  2: "##",
+};
 export const accidentalUnicode = {
-  bb: "♭♭",
-  b: "♭",
-  "": "",
-  "#": "♯",
-  "##": "♯♯",
+  [-2]: "♭♭",
+  [-1]: "♭",
+  0: "",
+  1: "♯",
+  2: "♯♯",
 };

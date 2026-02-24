@@ -4,10 +4,16 @@ interface FretBoardStringProps {
   rootValue?: number;
   numFrets?: number;
   highlighted: HighlightedFret[];
+  onFretClick?: (value: number, fretNumber: number) => void;
 }
 
 export default function FretBoardString(props: FretBoardStringProps) {
-  const { rootValue = 60, numFrets = 12, highlighted = [] } = props;
+  const {
+    rootValue = 60,
+    numFrets = 12,
+    highlighted = [],
+    onFretClick,
+  } = props;
   const selectedFrets = Array(numFrets + 1)
     .fill(false)
     .map((_, index) => {
@@ -16,17 +22,28 @@ export default function FretBoardString(props: FretBoardStringProps) {
       );
       return hightlight;
     });
+
+  const FretElement = onFretClick ? "button" : "div";
   return (
-    <div className="grow flex  justify-stretch w-full relative z-10">
+    <div className="grow flex  justify-stretch w-full relative z-10  ">
       <div className="absolute top-1/2 left-0 right-0 bg-foreground h-[1px]" />
 
       {selectedFrets.map((highlight, index) => {
         return (
-          <div
+          <FretElement
             key={index}
-            className={
-              index === 0 ? "absolute -left-9 w-8 top-3.5" : "grow relative"
+            onClick={
+              onFretClick
+                ? () => {
+                    onFretClick(index + rootValue, index);
+                  }
+                : undefined
             }
+            className={`${onFretClick ? "cursor-pointer" : ""} ${
+              index === 0
+                ? "absolute -left-10 w-10 top-0 bottom-0 "
+                : "grow relative "
+            }`}
           >
             {highlight && (
               <div className="absolute inset-0 flex justify-center items-center">
@@ -40,7 +57,7 @@ export default function FretBoardString(props: FretBoardStringProps) {
                 </div>
               </div>
             )}
-          </div>
+          </FretElement>
         );
       })}
     </div>

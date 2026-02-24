@@ -5,10 +5,12 @@ import { useOptions } from "@/hooks/useOptions";
 
 interface FretBoardProps {
   highlighted?: HighlightedFret[];
+  onFretClick?: (value: number, fret: number, stringIndex: number) => void;
+  numFrets?: number;
 }
 
 export default function FretBoard(props: FretBoardProps) {
-  const numFrets = 12;
+  const { onFretClick, numFrets = 12 } = props;
   const fretSpaces = Array(numFrets - 1).fill(0);
   const frets = Array(numFrets).fill(0);
   const highlighted = props.highlighted ?? [];
@@ -41,6 +43,13 @@ export default function FretBoard(props: FretBoardProps) {
               rootValue={value}
               numFrets={numFrets}
               highlighted={highlighted}
+              onFretClick={
+                onFretClick
+                  ? (value, fret) => {
+                      onFretClick?.(value, fret, index);
+                    }
+                  : undefined
+              }
             />
           ))}
 

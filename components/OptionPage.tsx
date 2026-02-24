@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { stringSets } from "./FretBoard";
+import { ReactNode } from "react";
 
 interface OptionPageProps {
   options?: boolean;
@@ -26,9 +27,8 @@ export function OptionPage(props: OptionPageProps) {
   const { options, setOptions } = useOptions();
   const { fretBoardLayout } = options;
   return (
-    <div className="flex flex-wrap gap-8 justify-between">
-      <div className="flex flex-col space-y-4 md:max-w-5/12">
-        <h3 className="font-bold text-lg">practice</h3>
+    <div className="flex flex-wrap gap-8 justify-stretch w-full">
+      <OptionsSection title="pratice">
         <OptionSwitch
           name="hideNoteNames"
           label="hide note names"
@@ -52,9 +52,8 @@ export function OptionPage(props: OptionPageProps) {
           options={options}
           setOptions={setOptions}
         />
-      </div>
-      <div className="flex flex-col space-y-4 md:max-w-5/12">
-        <h3 className="font-bold text-lg">fretboard view</h3>
+      </OptionsSection>
+      <OptionsSection title="fretboard view">
         <FieldLabel htmlFor="fretBoardLayout">
           <Field orientation="horizontal">
             <FieldContent>
@@ -71,7 +70,7 @@ export function OptionPage(props: OptionPageProps) {
                 })
               }
             >
-              <SelectTrigger id="fretBoardLayout" className="w-[200px]">
+              <SelectTrigger id="fretBoardLayout" className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -91,10 +90,8 @@ export function OptionPage(props: OptionPageProps) {
           options={options}
           setOptions={setOptions}
         />
-      </div>
-      <div className="flex flex-col space-y-4 md:max-w-5/12">
-        <h3 className="font-bold text-lg">note generation</h3>
-
+      </OptionsSection>
+      <OptionsSection title="note generation">
         <OptionSwitch
           name="preferFlats"
           label="prefer flats"
@@ -131,7 +128,7 @@ export function OptionPage(props: OptionPageProps) {
             </Select>
           </Field>
         </FieldLabel>
-      </div>
+      </OptionsSection>
     </div>
   );
 }
@@ -163,6 +160,7 @@ interface OptionSwitchProps {
   options: Options;
   setOptions: (changes: Partial<Options>) => void;
 }
+
 function OptionSwitch(props: OptionSwitchProps) {
   const { name, label, description, options, setOptions } = props;
   const value = options[name];
@@ -190,5 +188,21 @@ function OptionSwitch(props: OptionSwitchProps) {
         />
       </Field>
     </FieldLabel>
+  );
+}
+
+interface OptionsSectionProps {
+  title: string;
+  children: ReactNode;
+}
+
+function OptionsSection(props: OptionsSectionProps) {
+  const { title, children } = props;
+
+  return (
+    <section className="flex flex-col space-y-4 md:max-w-5/12 grow shrink">
+      <h3 className="font-bold text-lg">{title}</h3>
+      {children}
+    </section>
   );
 }

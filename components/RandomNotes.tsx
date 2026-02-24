@@ -11,32 +11,40 @@ import {
   formatMidiNote,
   generateNotes,
   highlightFromValue,
+  noteRange as defaultNoteRange,
+  Range,
+  PitchClass,
+  valueToNote,
+  toPitchClass,
 } from "@/utils/functions";
 import OptionPageDialog from "./OptionPage";
 import { useOptions } from "@/hooks/useOptions";
 import TimerButton from "./TimerButton";
 
 export default function RandomNotes() {
+  const [noteRange, setNoteRange] = useState<Range>(defaultNoteRange);
   const [currentNotes, setCurrentNotes] = useState<number[]>([69, 69, 69, 69]);
   const [correctlyPlayedIndex, setCorrectlyPlayedIndex] = useState<number>(-1);
   const { options } = useOptions();
 
   useWakeLock({ reacquireOnPageVisible: true });
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentNotes(generateNotes(options.numNotes));
-  }, [options.numNotes]);
 
   const [selectedNoteIndex, setSelectedNoteIndex] = useState<number | null>(
     null,
   );
   const [tempNoteIndex, setTempNoteIndex] = useState<number | null>(null);
+  const [selected, setSelected] = useState<PitchClass | null>(null);
 
   const handleGenerateNewNotes = () => {
-    setCurrentNotes(generateNotes(options.numNotes));
+    setCurrentNotes(generateNotes(options.numNotes, noteRange));
     setCorrectlyPlayedIndex(-1);
     setSelectedNoteIndex(null);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    handleGenerateNewNotes();
+  }, [options.numNotes, noteRange]);
 
   const highlights: HighlightedFret[] = [];
 
@@ -68,6 +76,11 @@ export default function RandomNotes() {
       ),
     );
   }
+  if (selected !== null) {
+    highlights.push(
+      highlightFromValue(selected.value, selectedColor, options.preferFlats),
+    );
+  }
 
   const handlePitchChange = (value: number | null) => {
     if (value === null) {
@@ -80,7 +93,9 @@ export default function RandomNotes() {
         return;
       }
       setCorrectlyPlayedIndex(correctlyPlayedIndex + 1);
-      setSelectedNoteIndex(correctlyPlayedIndex + 2);
+      if (options.showNextNoteLocation) {
+        setSelectedNoteIndex(correctlyPlayedIndex + 2);
+      }
     } else {
       if (options.isStrict) {
         setCorrectlyPlayedIndex(-1);
@@ -139,7 +154,22 @@ export default function RandomNotes() {
       {/*   /> */}
       {/* </div> */}
 
-      <FretBoard highlighted={highlights} />
+      <FretBoard
+        highlighted={highlights}
+        onFretClick={(value, fret, stringIndex) => {
+          if (fret === 0) {
+            setNoteRange({ from: value, to: value + 12 });
+          } else {
+            setSelected(
+              toPitchClass(
+                valueToNote(value, {
+                  prefer: options.preferFlats ? "flats" : "sharps",
+                }),
+              ),
+            );
+          }
+        }}
+      />
     </div>
   );
 }

@@ -35,7 +35,7 @@ interface KeyProps {
 function Key(props: KeyProps) {
   const { pitchIndex, onClick, onMouseEnter, onMouseLeave } = props;
   const pitch = keyBoardOctave[pitchIndex];
-  const isNatural = pitch.accidental === "";
+  const isNatural = pitch.accidental === 0;
 
   return (
     <button
