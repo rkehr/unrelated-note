@@ -74,4 +74,6 @@ const keyBoardOctave: Pitch[] = Array(12)
   .map((_, index) => {
     return index + c3;
   })
-  .map((value) => valueToNote(value, { prefer: "flats", forceNaturals: true }));
+  .map((value) =>
+    valueToNote(value, { preferFlats: true, forceNaturals: true }),
+  );

@@ -31,7 +31,7 @@ export default function PitchStringView(props: PitchStringViewProps) {
 
   const pitches = notes.map((pitch) =>
     valueToNote(pitch, {
-      prefer: preferFlats ? "flats" : "sharps",
+      preferFlats,
       forceNaturals: true,
     }),
   );

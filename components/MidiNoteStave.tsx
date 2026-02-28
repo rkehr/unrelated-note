@@ -7,19 +7,14 @@ import {
 import MusicStaff from "./MusicStaff";
 
 interface MidiNoteStaveProps {
-  notes: number[];
+  notes: Pitch[];
   preferFlats: boolean;
   correctlyPlayedIndex: number;
 }
 
 export default function MidiNoteStave(props: MidiNoteStaveProps) {
-  const { notes, preferFlats, correctlyPlayedIndex } = props;
-  const pitches = notes.map((pitch) =>
-    valueToNote(pitch, {
-      prefer: preferFlats ? "flats" : "sharps",
-      forceNaturals: true,
-    }),
-  );
+  const { notes, correctlyPlayedIndex } = props;
+  const pitches = notes;
 
   const bars = groupBars(pitches).map(pitchesToEasyScore);
   const joinedBars = joinGroups(bars);

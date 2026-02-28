@@ -1,18 +1,19 @@
 import { valueToOklch } from "@/lib/scales";
 
-export function highlightFromValue(
-  value: number,
-  color: string,
-  preferFlats: boolean,
-) {
+export function highlightFromValue(value: number, preferFlats: boolean) {
   const pitch = valueToNote(value, {
-    prefer: preferFlats ? "flats" : "sharps",
+    preferFlats,
     forceNaturals: true,
   });
+  return highlightFromPitchClass(pitch);
+}
+export function highlightFromPitchClass(pitchClass: PitchClass | Pitch) {
   return {
-    value: toPitchClass(pitch),
-    label: pitchClassToLabel(pitch),
-    color: valueToOklch(value),
+    value: Object.hasOwn(pitchClass, "octave")
+      ? toPitchClass(pitchClass as Pitch)
+      : pitchClass,
+    label: pitchClassToLabel(pitchClass),
+    color: valueToOklch(pitchClass.value),
   };
 }
 
@@ -21,31 +22,14 @@ export const formatMidiNote = (value: number | null, preferFlats: boolean) => {
     return null;
   }
   const pitch = valueToNote(value, {
-    prefer: preferFlats ? "flats" : "sharps",
+    preferFlats,
     forceNaturals: true,
   });
   return pitchToLabel(pitch);
 };
 
-export function generateNotes(numNotes: number, range: Range = noteRange) {
-  const series = Array(numNotes)
-    .fill(0)
-    .map(() => generateNote(range));
-
-  return series;
-}
-export function generateNote(range: Range) {
-  const span = range.to - range.from;
-  return Math.floor(Math.random() * span) + range.from;
-}
-
-export interface Range {
-  from: number;
-  to: number;
-}
-
 export interface ValueToNoteOptions {
-  prefer?: "sharps" | "flats";
+  preferFlats?: boolean;
   forceNaturals?: boolean;
 }
 export function valueToNote(
@@ -79,8 +63,7 @@ export const pickPitchClass = (
   candidates: PitchClass[],
   options?: ValueToNoteOptions,
 ) => {
-  const forceNaturals = options?.forceNaturals ?? true;
-  const preferredAccidental = options?.prefer ?? "flats";
+  const { forceNaturals = true, preferFlats = true } = options ?? {};
 
   const naturalPick = candidates.find((pc) => pc.accidental === 0);
   if (naturalPick && forceNaturals) {
@@ -90,14 +73,14 @@ export const pickPitchClass = (
   const flatPick = candidates.find(
     (pc) => pc.accidental === -1 || pc.accidental === -2,
   );
-  if (flatPick && preferredAccidental === "flats") {
+  if (flatPick && preferFlats) {
     return flatPick;
   }
 
   const sharpPick = candidates.find(
     (pc) => pc.accidental === 1 || pc.accidental === 2,
   );
-  if (sharpPick && preferredAccidental === "sharps") {
+  if (sharpPick && !preferFlats) {
     return sharpPick;
   }
 
@@ -165,9 +148,6 @@ function isPitch(obj: Pitch | PitchClass | number): obj is Pitch {
 
 export type NoteLetter = "A" | "B" | "C" | "D" | "E" | "F" | "G";
 export type Accidental = -2 | -1 | 0 | 1 | 2;
-
-export const noteRangeGuitar = { from: 52, to: 88 };
-export const noteRange = { from: 60, to: 72 };
 
 export const noteClassByValue: PitchClass[][] = [
   [

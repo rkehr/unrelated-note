@@ -9,36 +9,46 @@ import { useWakeLock } from "react-screen-wake-lock";
 import { RefreshCcwDot } from "lucide-react";
 import {
   formatMidiNote,
-  generateNotes,
-  highlightFromValue,
-  noteRange as defaultNoteRange,
   Range,
   PitchClass,
   valueToNote,
   toPitchClass,
+  Pitch,
+  highlightFromPitchClass,
 } from "@/utils/functions";
 import OptionPageDialog from "./OptionPage";
 import { useOptions } from "@/hooks/useOptions";
 import TimerButton from "./TimerButton";
+import {
+  defaultNoteRange,
+  generateNotes,
+  seedGenerationOptions,
+} from "@/lib/generate";
 
 export default function RandomNotes() {
   const [noteRange, setNoteRange] = useState<Range>(defaultNoteRange);
-  const [currentNotes, setCurrentNotes] = useState<number[]>([69, 69, 69, 69]);
+  const [currentNotes, setCurrentNotes] = useState<Pitch[]>([]);
   const [correctlyPlayedIndex, setCorrectlyPlayedIndex] = useState<number>(-1);
   const { options } = useOptions();
+  const { preferFlats } = options;
 
-  useWakeLock({ reacquireOnPageVisible: true });
+  const { type } = useWakeLock({ reacquireOnPageVisible: true });
 
-  const [selectedNoteIndex, setSelectedNoteIndex] = useState<number | null>(
-    null,
-  );
-  const [tempNoteIndex, setTempNoteIndex] = useState<number | null>(null);
-  const [selected, setSelected] = useState<PitchClass | null>(null);
+  const [fretboardSelection, setFretboardSelection] =
+    useState<PitchClass | null>(null);
 
   const handleGenerateNewNotes = () => {
-    setCurrentNotes(generateNotes(options.numNotes, noteRange));
+    setCurrentNotes(
+      generateNotes(
+        seedGenerationOptions({
+          numberOfNotes: options.numNotes,
+          range: noteRange,
+          generator: "noRepeatRandom",
+          preferFlats,
+        }),
+      ),
+    );
     setCorrectlyPlayedIndex(-1);
-    setSelectedNoteIndex(null);
   };
 
   useEffect(() => {
@@ -48,58 +58,33 @@ export default function RandomNotes() {
 
   const highlights: HighlightedFret[] = [];
 
-  const selectedColor = "#77AACC";
-  const tempColor = "#AA77CC";
-
+  const targetIndex = correctlyPlayedIndex + 1;
   if (
-    tempNoteIndex !== null &&
-    typeof currentNotes[tempNoteIndex] !== "undefined"
+    options.showNextNoteLocation &&
+    typeof currentNotes[targetIndex] !== "undefined"
   ) {
-    highlights.push(
-      highlightFromValue(
-        currentNotes[tempNoteIndex],
-        tempColor,
-        options.preferFlats,
-      ),
-    );
+    highlights.push(highlightFromPitchClass(currentNotes[targetIndex]));
   }
-
-  if (
-    selectedNoteIndex !== null &&
-    typeof currentNotes[selectedNoteIndex] !== "undefined"
-  ) {
-    highlights.push(
-      highlightFromValue(
-        currentNotes[selectedNoteIndex],
-        selectedColor,
-        options.preferFlats,
-      ),
-    );
-  }
-  if (selected !== null) {
-    highlights.push(
-      highlightFromValue(selected.value, selectedColor, options.preferFlats),
-    );
+  if (fretboardSelection !== null) {
+    highlights.push(highlightFromPitchClass(fretboardSelection));
   }
 
   const handlePitchChange = (value: number | null) => {
     if (value === null) {
       return;
     }
-    const targetNote = currentNotes[correctlyPlayedIndex + 1];
-    if (value % 12 === targetNote % 12) {
-      if (correctlyPlayedIndex + 1 === currentNotes.length - 1) {
+    const targetNote = currentNotes[targetIndex];
+
+    if (value === targetNote.value) {
+      if (targetIndex === currentNotes.length - 1) {
         handleGenerateNewNotes();
         return;
       }
-      setCorrectlyPlayedIndex(correctlyPlayedIndex + 1);
-      if (options.showNextNoteLocation) {
-        setSelectedNoteIndex(correctlyPlayedIndex + 2);
-      }
-    } else {
-      if (options.isStrict) {
-        setCorrectlyPlayedIndex(-1);
-      }
+      setCorrectlyPlayedIndex(targetIndex);
+      return;
+    }
+    if (options.isStrict) {
+      setCorrectlyPlayedIndex(-1);
     }
   };
 
@@ -109,12 +94,13 @@ export default function RandomNotes() {
         <h2 className="text-2xl font-bold ">random note sequence</h2>
         <OptionPageDialog />
       </div>
+      {type}
       <div className={`w-full max-w-250`}>
         <div className="flex gap-2 ml-4 justify-start">
           <PitchDetector
             onPitchChange={handlePitchChange}
             formatMidiNote={(value) => {
-              return formatMidiNote(value, options.preferFlats);
+              return formatMidiNote(value, preferFlats);
             }}
           />
           <TimerButton
@@ -132,27 +118,10 @@ export default function RandomNotes() {
 
         <MidiNoteStave
           notes={currentNotes}
-          preferFlats={options.preferFlats}
+          preferFlats={preferFlats}
           correctlyPlayedIndex={correctlyPlayedIndex}
         />
       </div>
-
-      {/* <div */}
-      {/*   className={`text-5xl font-bold flex justify-evenly align-baseline gap-16 shrink-0 `} */}
-      {/* > */}
-      {/*   <PitchStringView */}
-      {/*     notes={currentNotes} */}
-      {/*     preferFlats={options.preferFlats} */}
-      {/*     hide={options.hideNoteNames} */}
-      {/*     selectedNoteIndex={selectedNoteIndex} */}
-      {/*     tempNoteIndex={tempNoteIndex} */}
-      {/*     selectedColor={selectedColor} */}
-      {/*     tempColor={tempColor} */}
-      {/*     correctlyPlayedIndex={correctlyPlayedIndex} */}
-      {/*     setSelectedNoteIndex={setSelectedNoteIndex} */}
-      {/*     setTempNoteIndex={setSelectedNoteIndex} */}
-      {/*   /> */}
-      {/* </div> */}
 
       <FretBoard
         highlighted={highlights}
@@ -160,10 +129,10 @@ export default function RandomNotes() {
           if (fret === 0) {
             setNoteRange({ from: value, to: value + 12 });
           } else {
-            setSelected(
+            setFretboardSelection(
               toPitchClass(
                 valueToNote(value, {
-                  prefer: options.preferFlats ? "flats" : "sharps",
+                  preferFlats,
                 }),
               ),
             );
