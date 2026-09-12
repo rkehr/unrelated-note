@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FretBoard from "./FretBoard";
 import { HighlightedFret } from "./FretBoardString";
 import PitchDetector from "./PitchDetector";
 import MidiNoteStave from "./MidiNoteStave";
 import { useWakeLock } from "react-screen-wake-lock";
-import { RefreshCcwDot } from "lucide-react";
+import { ListChevronsDownUp, Music, RefreshCcwDot } from "lucide-react";
 import {
   formatMidiNote,
   Range,
@@ -32,12 +32,17 @@ export default function RandomNotes() {
   const { options } = useOptions();
   const { preferFlats } = options;
 
-  const { type } = useWakeLock({ reacquireOnPageVisible: true });
+  const wakelock = useWakeLock({ reacquireOnPageVisible: true });
+  useEffect(() => {
+    if (typeof wakelock.type === "undefined") {
+      wakelock.request();
+    }
+  }, [wakelock]);
 
   const [fretboardSelection, setFretboardSelection] =
     useState<PitchClass | null>(null);
 
-  const handleGenerateNewNotes = () => {
+  const handleGenerateNewNotes = useCallback(() => {
     setCurrentNotes(
       generateNotes(
         seedGenerationOptions({
@@ -49,7 +54,13 @@ export default function RandomNotes() {
       ),
     );
     setCorrectlyPlayedIndex(-1);
-  };
+  }, [
+    noteRange,
+    options.numNotes,
+    setCurrentNotes,
+    setCorrectlyPlayedIndex,
+    preferFlats,
+  ]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -94,26 +105,35 @@ export default function RandomNotes() {
         <h2 className="text-2xl font-bold ">random note sequence</h2>
         <OptionPageDialog />
       </div>
-      {type}
       <div className={`w-full max-w-250`}>
-        <div className="flex gap-2 ml-4 justify-start">
-          <PitchDetector
-            onPitchChange={handlePitchChange}
-            formatMidiNote={(value) => {
-              return formatMidiNote(value, preferFlats);
-            }}
-          />
-          <TimerButton
-            onTimerComplete={() => {
-              handleGenerateNewNotes();
-            }}
-          />
-          <button
-            onClick={handleGenerateNewNotes}
-            className={`flex justify-center items-center h-12 w-12 bg-foreground text-background border-3 border-foreground rounded-full transition-colors hover:text-foreground hover:bg-background cursor-pointer`}
-          >
-            <RefreshCcwDot />
-          </button>
+        <div className="flex gap-2 mx-4 justify-between">
+          <div className="flex gap-2 ">
+            <PitchDetector
+              onPitchChange={handlePitchChange}
+              formatMidiNote={(value) => {
+                return formatMidiNote(value, preferFlats);
+              }}
+            />
+            <TimerButton onTimerComplete={handleGenerateNewNotes} />
+            <button
+              onClick={handleGenerateNewNotes}
+              className={`flex justify-center items-center h-12 w-12 bg-foreground text-background border-3 border-foreground rounded-full transition-colors hover:text-foreground hover:bg-background cursor-pointer`}
+            >
+              <RefreshCcwDot />
+            </button>
+          </div>
+          <div className="flex gap-2 ">
+            <button
+              className={`flex justify-center items-center h-12 w-12 bg-foreground text-background border-3 border-foreground rounded-full transition-colors hover:text-foreground hover:bg-background cursor-pointer`}
+            >
+              <ListChevronsDownUp />
+            </button>
+            <button
+              className={`flex justify-center items-center h-12 w-12 bg-foreground text-background border-3 border-foreground rounded-full transition-colors hover:text-foreground hover:bg-background cursor-pointer`}
+            >
+              <Music />
+            </button>
+          </div>
         </div>
 
         <MidiNoteStave
@@ -127,7 +147,7 @@ export default function RandomNotes() {
         highlighted={highlights}
         onFretClick={(value, fret, stringIndex) => {
           if (fret === 0) {
-            setNoteRange({ from: value, to: value + 12 });
+            setNoteRange({ from: value, to: value + 13 });
           } else {
             setFretboardSelection(
               toPitchClass(

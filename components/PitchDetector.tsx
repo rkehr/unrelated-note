@@ -9,10 +9,15 @@ interface PitchDetectorProps {
   formatMidiNote: (value: number | null) => ReactNode;
 }
 
+const frequencyToMidi = (frequency: number): number => {
+  return 12 * Math.log2(frequency / 440) + 69;
+};
+
 function PitchDetector(props: PitchDetectorProps) {
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [level, setLevel] = useState(0);
+  const [deviation, setDeviation] = useState(0);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -34,11 +39,6 @@ function PitchDetector(props: PitchDetectorProps) {
   useEffect(() => {
     onPitchChangeRef.current = onPitchChange;
   }, [onPitchChange]);
-
-  // Convert frequency (Hz) to MIDI note number
-  const frequencyToMidi = (frequency: number): number => {
-    return Math.round(12 * Math.log2(frequency / 440) + 69);
-  };
 
   const startListening = async () => {
     try {
@@ -97,9 +97,13 @@ function PitchDetector(props: PitchDetectorProps) {
       let currentMidiNote: number | null = null;
 
       if (frequency && frequency > 0) {
-        const midiNote = frequencyToMidi(frequency);
+        const note = frequencyToMidi(frequency);
+        const midiNote = Math.round(note);
+        const deviation = note - midiNote;
+        const noteDeviation = deviation < 0.5 ? deviation : -1 + deviation;
         if (midiNote >= 0 && midiNote <= 127) {
           currentMidiNote = midiNote;
+          setDeviation(noteDeviation);
         }
       }
 
@@ -168,6 +172,15 @@ function PitchDetector(props: PitchDetectorProps) {
           className="bg-green-600 absolute h-full left-0 right-0 bottom-0 transition-all duration-300 ease-out opacity-50 z-1"
           style={{ height: `${level * 100}%` }}
         />
+        <div
+          className="absolute inset-0 flex items-start justify-center transition-transform duration-150"
+          style={{ transform: `rotate(${deviation * 90}deg)` }}
+        >
+          <div
+            className={`${Math.abs(deviation) < 0.02 ? "bg-green-600" : "bg-red-900"} ${previousMidiNote === null ? "opacity-0" : "opacity-100"} w-1 h-1 rounded-full transition-all origin-[50%_100%] duration-300 ease-out`}
+            // style={{ transform: `rotate(${deviation * 90}deg)` }}
+          />
+        </div>
       </button>
 
       {error && <p className="mt-2 text-red-500">{error}</p>}
